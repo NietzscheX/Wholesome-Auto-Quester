@@ -11,37 +11,89 @@ namespace Db_To_Json
         public static readonly string WorkingDirectory = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
         public static readonly string OutputPath = WorkingDirectory + Path.DirectorySeparatorChar + "Output";
         private static readonly string DBName = "WoWDb335_ACore";
-        private static readonly string _dbDirectory = $"{WorkingDirectory}{PathSep}WoWDB{PathSep}{DBName};Cache=Shared;";
-        private static SQLiteConnection _con;
-        private static SQLiteCommand _cmd;
 
         static void Main(string[] args)
         {
             try
             {
-                Console.WriteLine("Starting generation");
+                Console.WriteLine("===== WAQ Database to JSON Generator =====");
+                Console.WriteLine("Chooseファイルatabase type:");
+                Console.WriteLine("1. SQLite (English - AQ.json)");
+                Console.WriteLine("2. MySQL (Chinese - AQ-cn.json)");
+                Console.Write("Enter your choice (1 or 2): ");
+                
+                string choice = Console.ReadLine();
+                DatabaseConfig config = null;
 
-                if (!File.Exists($"{WorkingDirectory}{PathSep}WoWDB{PathSep}{DBName}"))
+                if (choice == "1")
                 {
-                    Console.WriteLine("WARNING: The database is absent from the WoWDB folder");
+                    // SQLite 英文版本
+                    Console.WriteLine("\n[SQLite Mode] Generating English version (AQ.json)...");
+                    string dbPath = $"{WorkingDirectory}{PathSep}WoWDB{PathSep}{DBName}";
+                    
+                    if (!File.Exists(dbPath))
+                    {
+                        Console.WriteLine($"ERROR: Database file not found: {dbPath}");
+                        Console.WriteLine("Please place your SQLite database in the WoWDB folder.");
+                    }
+                    else
+                    {
+                        config = DatabaseConfig.DefaultSQLite(WorkingDirectory, PathSep.ToString());
+                    }
+                }
+                else if (choice == "2")
+                {
+                    // MySQL 中文版本
+                    Console.WriteLine("\n[MySQL Mode] Generating Chinese version (AQ-cn.json)...");
+                    Console.Write("MySQL Host (default: 192.168.1.2): ");
+                    string host = Console.ReadLine();
+                    if (string.IsNullOrWhiteSpace(host)) host = "192.168.1.2";
+
+                    Console.Write("MySQL Port (default: 3306): ");
+                    string portStr = Console.ReadLine();
+                    int port = string.IsNullOrWhiteSpace(portStr) ? 3306 : int.Parse(portStr);
+
+                    Console.Write("MySQL User (default: root): ");
+                    string user = Console.ReadLine();
+                    if (string.IsNullOrWhiteSpace(user)) user = "root";
+
+                    Console.Write("MySQL Password: ");
+                    string password = Console.ReadLine();
+
+                    Console.Write("MySQL Database (default: acore_world): ");
+                    string database = Console.ReadLine();
+                    if (string.IsNullOrWhiteSpace(database)) database = "acore_world";
+
+                    config = DatabaseConfig.MySQLChinese(host, port, user, password, database);
                 }
                 else
                 {
-                    _con = new SQLiteConnection("Data Source=" + _dbDirectory);
-                    _con.Open();
-                    _cmd = _con.CreateCommand();
+                    Console.WriteLine("Invalid choice. Exiting...");
+                    Console.Read();
+                    return;
+                }
 
-                    // Auto quester JSON
-                    AutoQuesterGeneration.Generate(_con, _cmd);
-
-                    Console.WriteLine("Generation finished");
-                    _con.Dispose();
+                if (config != null)
+                {
+                    using (var con = config.CreateConnection())
+                    {
+                        con.Open();
+                        Console.WriteLine($"Connected to {config.Type} database successfully!");
+                        
+                        // Auto quester JSON
+                        AutoQuesterGeneration.Generate(con, config);
+                        
+                        Console.WriteLine("\n===== Generation Complete =====");
+                    }
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine($"\nERROR: {e.Message}");
+                Console.WriteLine($"Stack Trace: {e.StackTrace}");
             }
+            
+            Console.WriteLine("\nPress any key to exit...");
             Console.Read();
         }
     }

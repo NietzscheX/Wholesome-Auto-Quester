@@ -2,6 +2,8 @@ Wholesome_Auto_Quester/bin
 Wholesome_Auto_Quester/obj
 .vs
 .git
+*.cache
+ Wholesome_Auto_Quester/Compiled
 
 
 packages

@@ -5,6 +5,7 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
@@ -16,12 +17,12 @@ namespace Db_To_Json.AutoQuester
 {
     internal class AutoQuesterGeneration
     {
-        //private static readonly DBType DbType = DBType.AZEROTH_CORE;
-        private static readonly string _jsonFileName = "AQ.json";
-        private static readonly string _zipName = "AQ.zip";
-        private static readonly string _AQJsonOutputPath = $"{JSONGenerator.OutputPath}{JSONGenerator.PathSep}{_jsonFileName}";
+        private static string _jsonFileName;
+        private static string _zipName;
+        private static string _AQJsonOutputPath;
         private static readonly string _AQJsonCopyToPath = $"{Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName}{JSONGenerator.PathSep}Wholesome_Auto_Quester{JSONGenerator.PathSep}Database";
-        private static readonly string _zipFilePath = $"{_AQJsonCopyToPath}{JSONGenerator.PathSep}{_zipName}";
+        private static string _zipFilePath;
+        private static string _spellTableName;
 
         private static List<AQModelCreatureTemplate> _allCreatureTemplates = new List<AQModelCreatureTemplate>();
         private static List<AQModelGameObjectTemplate> _allGameObjectTemplates = new List<AQModelGameObjectTemplate>();
@@ -30,15 +31,24 @@ namespace Db_To_Json.AutoQuester
         private static List<AQModelCreatureTemplate> _allCreaturesToGrind = new List<AQModelCreatureTemplate>();
         private static List<AQModelWorldMapArea> _allWorldMapAreas = new List<AQModelWorldMapArea>();
 
-        public static void Generate(SQLiteConnection con, SQLiteCommand cmd)
+        public static void Generate(IDbConnection con, DatabaseConfig config)
         {
-            Console.WriteLine("----- Starting generation for Auto Quester -----");
+            // 设置文件名和表名
+            _jsonFileName = config.OutputFileName;
+            _zipName = _jsonFileName.Replace(".json", ".zip");
+            _AQJsonOutputPath = $"{JSONGenerator.OutputPath}{JSONGenerator.PathSep}{_jsonFileName}";
+            _zipFilePath = $"{_AQJsonCopyToPath}{JSONGenerator.PathSep}{_zipName}";
+            _spellTableName = config.GetSpellTableName();
+
+            Console.WriteLine($"----- Starting generation for Auto Quester ({config.Type}) -----");
+            Console.WriteLine($"Output file: {_jsonFileName}");
+            Console.WriteLine($"Spell table: {_spellTableName}");
             Stopwatch totalWatch = Stopwatch.StartNew();
 
             // ---------------- INDICES CREATION ----------------
-            Stopwatch indiceWatch = Stopwatch.StartNew();
-            CreateIndices(cmd);
-            Console.WriteLine($"Indice creation took {indiceWatch.ElapsedMilliseconds}ms");
+            // 跳过索引创建以避免MySQL/SQLite兼容性问题
+            // 索引对数据生成不是必需的，只是优化查询速度
+            Console.WriteLine($"Skipping index creation (not required for generation)\");
 
             // ---------------- WORLD MAP AREAS ----------------
             _allWorldMapAreas = QueryWorldMapAreas(con);
@@ -391,7 +401,7 @@ namespace Db_To_Json.AutoQuester
             Console.WriteLine($"[AQ] Total process took {totalWatch.ElapsedMilliseconds}ms");
         }
 
-        private static List<int> QueryCreatureTemplatesByKillCredits(SQLiteConnection con, int entry)
+        private static List<int> QueryCreatureTemplatesByKillCredits(IDbConnection con, int entry)
         {
             string queryTemplate = $@"
                 SELECT *
@@ -403,7 +413,7 @@ namespace Db_To_Json.AutoQuester
             return result.Select(ct => ct.entry).ToList();
         }
 
-        private static List<AQModelReferenceLootTemplate> QueryReferenceLootTemplateByItem(SQLiteConnection con, int itemId)
+        private static List<AQModelReferenceLootTemplate> QueryReferenceLootTemplateByItem(IDbConnection con, int itemId)
         {
             string queryReferenceootTemplate = $@"
                 SELECT *
@@ -414,7 +424,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static List<AQModelCreatureLootTemplate> QueryCreatureLootTemplatesByItemEntry(SQLiteConnection con, int itemId)
+        private static List<AQModelCreatureLootTemplate> QueryCreatureLootTemplatesByItemEntry(IDbConnection con, int itemId)
         {
             // get standard loot templates
             string queryLootTemplate = $@"
@@ -446,7 +456,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static AQModelItemTemplate QueryItemTemplateByItemEntry(SQLiteConnection con, int itemEntry)
+        private static AQModelItemTemplate QueryItemTemplateByItemEntry(IDbConnection con, int itemEntry)
         {
             if (itemEntry == 0) return null;
             string queryItemTemplate = $@"
@@ -478,7 +488,7 @@ namespace Db_To_Json.AutoQuester
             return result.FirstOrDefault();
         }
 
-        private static List<AQModelCreatureTemplate> QueryCreatureTemplatesToGrind(SQLiteConnection con)
+        private static List<AQModelCreatureTemplate> QueryCreatureTemplatesToGrind(IDbConnection con)
         {
             string queryTemplates = $@"
                 SELECT * FROM creature_template ct
@@ -497,18 +507,18 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static AQModelSpell QuerySpellById(SQLiteConnection con, int spellID)
+        private static AQModelSpell QuerySpellById(IDbConnection con, int spellID)
         {
             if (spellID <= 0) return null;
             string query = $@"
                 SELECT *
-                FROM spell
+                FROM {_spellTableName}
                 WHERE ID = {spellID}
             ";
             List<AQModelSpell> spells = con.Query<AQModelSpell>(query).ToList();
             if (spells.Count <= 0)
             {
-                Console.WriteLine($"Couldn't find spell with ID {spellID}");
+                Console.WriteLine($"Couldn't find spell with ID {spellID} in table {_spellTableName}");
                 return null;
             }
             if (spells.Count > 1) Console.WriteLine($"Spell ID {spellID} has more than one spells !");
@@ -517,7 +527,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static List<AQModelItemLootTemplate> QueryItemLootTemplateByEntry(SQLiteConnection con, int lootEntry)
+        private static List<AQModelItemLootTemplate> QueryItemLootTemplateByEntry(IDbConnection con, int lootEntry)
         {
             if (lootEntry == 0) return null;
             string queryItemLootTemplate = $@"
@@ -529,7 +539,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static List<int> QueryGameObjectTemplatesByLootEntry(SQLiteConnection con, int lootEntry)
+        private static List<int> QueryGameObjectTemplatesByLootEntry(IDbConnection con, int lootEntry)
         {
             string queryGOTemplate = $@"
                 Select *
@@ -546,7 +556,7 @@ namespace Db_To_Json.AutoQuester
             return result.Select(got => got.entry).ToList();
         }
 
-        private static List<AQModelGameObjectLootTemplate> QueryGameObjectLootTemplateByItemEntry(SQLiteConnection con, int itemId)
+        private static List<AQModelGameObjectLootTemplate> QueryGameObjectLootTemplateByItemEntry(IDbConnection con, int itemId)
         {
             string queryLootTemplate = $@"
                 SELECT *
@@ -561,7 +571,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static List<AQModelAreaTrigger> QueryAreasToExplore(SQLiteConnection con, int questId)
+        private static List<AQModelAreaTrigger> QueryAreasToExplore(IDbConnection con, int questId)
         {
             string query = $@"
                 SELECT a.ContinentID, a.x PositionX, a.y PositionY, a.z PositionZ, a.radius Radius
@@ -574,7 +584,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static List<int> QueryNextQuestsIdsByQuestId(SQLiteConnection con, int questId)
+        private static List<int> QueryNextQuestsIdsByQuestId(IDbConnection con, int questId)
         {
             string query = $@"
                 SELECT ID FROM quest_template_addon
@@ -585,7 +595,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static List<int> QueryPreviousQuestsIdsByQuestId(SQLiteConnection con, int questId)
+        private static List<int> QueryPreviousQuestsIdsByQuestId(IDbConnection con, int questId)
         {
             string query = $@"
                 SELECT ID FROM quest_template_addon
@@ -596,7 +606,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static List<int> QueryGameObjectQuestEnders(SQLiteConnection con, int questId)
+        private static List<int> QueryGameObjectQuestEnders(IDbConnection con, int questId)
         {
             string queryGOEndersIds = $@"
                 SELECT id
@@ -607,7 +617,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static List<int> QueryCreatureQuestEnders(SQLiteConnection con, int questId)
+        private static List<int> QueryCreatureQuestEnders(IDbConnection con, int questId)
         {
             string queryQuestEndersIds = $@"
                 SELECT id
@@ -618,7 +628,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static List<AQModelGameObject> QueryGameObjectByEntry(SQLiteConnection con, int gameObjectId)
+        private static List<AQModelGameObject> QueryGameObjectByEntry(IDbConnection con, int gameObjectId)
         {
             string query = $@"
                 Select *
@@ -629,7 +639,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static AQModelGameObjectTemplate QueryGameObjectTemplateByEntry(SQLiteConnection con, int objectEntry)
+        private static AQModelGameObjectTemplate QueryGameObjectTemplateByEntry(IDbConnection con, int objectEntry)
         {
             if (objectEntry <= 0) return null;
             string queryGOTemplate = $@"
@@ -652,7 +662,7 @@ namespace Db_To_Json.AutoQuester
             return result.FirstOrDefault();
         }
 
-        private static List<int> QueryGameObjectQuestGivers(SQLiteConnection con, int questId)
+        private static List<int> QueryGameObjectQuestGivers(IDbConnection con, int questId)
         {
             string queryGOGiverssIds = $@"
                 SELECT id
@@ -663,7 +673,7 @@ namespace Db_To_Json.AutoQuester
             return ids;
         }
 
-        private static List<AQModelWayPointData> QueryWayPointDataByPathId(SQLiteConnection con, int pathId)
+        private static List<AQModelWayPointData> QueryWayPointDataByPathId(IDbConnection con, int pathId)
         {
             string queryWPData = $@"
                 SELECT *
@@ -674,7 +684,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static AQModelCreatureAddon QueryCreaturesAddonsByGuid(SQLiteConnection con, uint guid)
+        private static AQModelCreatureAddon QueryCreaturesAddonsByGuid(IDbConnection con, uint guid)
         {
             string queryCreatureAddon = $@"
                 SELECT *
@@ -689,7 +699,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static List<AQModelItemTemplate> GetAllItemsStartingAQuest(SQLiteConnection con)
+        private static List<AQModelItemTemplate> GetAllItemsStartingAQuest(IDbConnection con)
         {
             string queryStartQuests = $@"
                 SELECT * 
@@ -699,7 +709,7 @@ namespace Db_To_Json.AutoQuester
             return con.Query<AQModelItemTemplate>(queryStartQuests).ToList();
         }
 
-        private static List<AQModelCreature> QueryCreaturesById(SQLiteConnection con, int creatureId, bool withWayPoints = true)
+        private static List<AQModelCreature> QueryCreaturesById(IDbConnection con, int creatureId, bool withWayPoints = true)
         {
             string queryCreature = $@"
                 SELECT *
@@ -733,7 +743,7 @@ namespace Db_To_Json.AutoQuester
             return result.Count > 0 ? result : new List<AQModelCreature>();
         }
 
-        private static AQModelCreatureTemplate QueryCreatureTemplateByEntry(SQLiteConnection con, int creatureEntry)
+        private static AQModelCreatureTemplate QueryCreatureTemplateByEntry(IDbConnection con, int creatureEntry)
         {
             if (creatureEntry <= 0) return null;
             string queryTemplate = $@"
@@ -758,7 +768,7 @@ namespace Db_To_Json.AutoQuester
             return result.FirstOrDefault();
         }
 
-        public static List<int> QueryCreatureQuestGiver(SQLiteConnection con, int questId)
+        public static List<int> QueryCreatureQuestGiver(IDbConnection con, int questId)
         {
             string queryQuestGiversIds = $@"
                 SELECT id
@@ -769,7 +779,7 @@ namespace Db_To_Json.AutoQuester
             return questGiversIds;
         }
 
-        private static List<int> QueryQuestIdsByExclusiveGroup(SQLiteConnection con, int exclusiveGroup)
+        private static List<int> QueryQuestIdsByExclusiveGroup(IDbConnection con, int exclusiveGroup)
         {
             if (exclusiveGroup == 0) return new List<int>();
             string queryQuestExcl = $@"
@@ -781,7 +791,7 @@ namespace Db_To_Json.AutoQuester
             return result;
         }
 
-        private static List<AQModelWorldMapArea> QueryWorldMapAreas(SQLiteConnection con)
+        private static List<AQModelWorldMapArea> QueryWorldMapAreas(IDbConnection con)
         {
             string queryWMap = $@"
                 SELECT *
@@ -790,7 +800,7 @@ namespace Db_To_Json.AutoQuester
             return con.Query<AQModelWorldMapArea>(queryWMap).ToList();
         }
 
-        private static List<AQModelConditions> QueryConditionsBySourceEntry(SQLiteConnection con, int sourceEntry)
+        private static List<AQModelConditions> QueryConditionsBySourceEntry(IDbConnection con, int sourceEntry)
         {
             string query = $@"
                 SELECT *
