@@ -36,6 +36,16 @@ namespace Db_To_Json
         }
 
         /// <summary>
+        /// 根据数据库类型获取world_map_area表名
+        /// MySQL: worldmaparea_dbc
+        /// SQLite: world_map_area
+        /// </summary>
+        public string GetWorldMapAreaTableName()
+        {
+            return Type == DatabaseType.MySQL ? "worldmaparea_dbc" : "world_map_area";
+        }
+
+        /// <summary>
         /// 创建数据库连接
         /// </summary>
         public IDbConnection CreateConnection()

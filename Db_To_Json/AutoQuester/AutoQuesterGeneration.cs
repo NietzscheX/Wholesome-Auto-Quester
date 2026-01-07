@@ -23,6 +23,7 @@ namespace Db_To_Json.AutoQuester
         private static readonly string _AQJsonCopyToPath = $"{Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName}{JSONGenerator.PathSep}Wholesome_Auto_Quester{JSONGenerator.PathSep}Database";
         private static string _zipFilePath;
         private static string _spellTableName;
+        private static string _worldMapAreaTableName;
 
         private static List<AQModelCreatureTemplate> _allCreatureTemplates = new List<AQModelCreatureTemplate>();
         private static List<AQModelGameObjectTemplate> _allGameObjectTemplates = new List<AQModelGameObjectTemplate>();
@@ -39,10 +40,12 @@ namespace Db_To_Json.AutoQuester
             _AQJsonOutputPath = $"{JSONGenerator.OutputPath}{JSONGenerator.PathSep}{_jsonFileName}";
             _zipFilePath = $"{_AQJsonCopyToPath}{JSONGenerator.PathSep}{_zipName}";
             _spellTableName = config.GetSpellTableName();
+            _worldMapAreaTableName = config.GetWorldMapAreaTableName();
 
             Console.WriteLine($"----- Starting generation for Auto Quester ({config.Type}) -----");
             Console.WriteLine($"Output file: {_jsonFileName}");
             Console.WriteLine($"Spell table: {_spellTableName}");
+            Console.WriteLine($"WorldMapArea table: {_worldMapAreaTableName}");
             Stopwatch totalWatch = Stopwatch.StartNew();
 
             // ---------------- INDICES CREATION ----------------
@@ -795,7 +798,7 @@ namespace Db_To_Json.AutoQuester
         {
             string queryWMap = $@"
                 SELECT *
-                FROM world_map_area
+                FROM {_worldMapAreaTableName}
             ";
             return con.Query<AQModelWorldMapArea>(queryWMap).ToList();
         }
