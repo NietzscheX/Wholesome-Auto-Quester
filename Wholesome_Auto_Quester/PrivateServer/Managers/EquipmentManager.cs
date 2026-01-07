@@ -32,6 +32,9 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
         private EquipmentConfig _config;
         private ClassProfile _currentClassProfile;
         
+        // TeleportManager 引用（用于保存返回传送点）
+        private TeleportManager _teleportManager;
+        
         // 保存的返回传送点（用于装备更换后返回）
         private TeleportLocation _savedReturnLocation;
         private float _savedPosX;
@@ -52,8 +55,10 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
         public TeleportLocation SavedReturnLocation => _savedReturnLocation;
         public bool HasSavedReturnLocation => _savedReturnLocation != null;
         
-        public void Initialize(string yamlPath)
+        public void Initialize(string yamlPath, TeleportManager teleportManager = null)
         {
+            _teleportManager = teleportManager;
+            
             if (!File.Exists(yamlPath))
             {
                 Logging.WriteError($"[WAQ-Equipment] YAML config file not found at: {yamlPath}");
@@ -106,7 +111,8 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                 if (NeedsRefresh() || NeedsSupplies())
                 {
                     Logging.Write("[WAQ-Equipment] ⏰ Periodic check: Maintenance needed!");
-                    TriggerRefresh();
+                    // 使用存储的 TeleportManager 以便保存返回传送点
+                    TriggerRefresh(_teleportManager);
                 }
             }
             catch (Exception e)

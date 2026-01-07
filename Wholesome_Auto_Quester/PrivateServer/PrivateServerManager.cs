@@ -97,11 +97,11 @@ namespace Wholesome_Auto_Quester.PrivateServer
                         _equipmentConfig = YamlConfigLoader.Load(equipmentPath);
                         if (_equipmentConfig != null)
                         {
-                            // 初始化装备管理器
+                            // 初始化装备管理器（传入 TeleportManager 以支持返回传送）
                             if (settings.EnableStarterEquipment)
                             {
                                 _equipmentManager = new EquipmentManager();
-                                _equipmentManager.Initialize(equipmentPath);
+                                _equipmentManager.Initialize(equipmentPath, _teleportManager);
                                 Logging.Write("[WAQ-Private] ✓ Starter Equipment initialized");
                             }
                             

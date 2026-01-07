@@ -432,7 +432,7 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
 
                 foreach (Objective ob in GetAllObjectives())
                 {
-                    string objectiveToRecord = objectives.FirstOrDefault(o => !string.IsNullOrEmpty(ob.ObjectiveName) && o.StartsWith(ob.ObjectiveName));
+                    string objectiveToRecord = FindMatchingObjective(objectives, ob.ObjectiveName);
                     if (objectiveToRecord != null)
                     {
                         ob.ObjectiveIndex = Array.IndexOf(objectives, objectiveToRecord) + 1;
@@ -460,6 +460,105 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
 
             Logger.Log($"Objectives for {QuestTemplate.LogTitle} succesfully recorded after {nbAtempts} attempts");
             _objectivesRecorded = true;
+        }
+        
+        /// <summary>
+        /// 智能匹配任务目标文本
+        /// 支持处理中英文混合、不同格式的目标文本
+        /// </summary>
+        private string FindMatchingObjective(string[] gameObjectives, string dbObjectiveName)
+        {
+            if (string.IsNullOrEmpty(dbObjectiveName) || gameObjectives == null || gameObjectives.Length == 0)
+                return null;
+            
+            // 方法1: 精确匹配（原始逻辑）
+            var exactMatch = gameObjectives.FirstOrDefault(o => o.StartsWith(dbObjectiveName));
+            if (exactMatch != null)
+                return exactMatch;
+            
+            // 方法2: 提取核心名称后匹配
+            // 移除常见的英文后缀如 " slain", " killed", " collected", " gathered" 等
+            string[] suffixesToStrip = new string[] 
+            { 
+                " slain", " killed", " collected", " gathered", " obtained", 
+                " destroyed", " recovered", " retrieved", " looted", " defeated",
+                " 被杀死", " 已击杀", " 已收集", " 已获得", " 已摧毁"
+            };
+            
+            string coreName = dbObjectiveName;
+            foreach (string suffix in suffixesToStrip)
+            {
+                if (coreName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    coreName = coreName.Substring(0, coreName.Length - suffix.Length);
+                    break;
+                }
+            }
+            
+            // 尝试用核心名称匹配（游戏目标通常是 "怪物名: 0/8" 或 "怪物名 slain: 0/8"）
+            var coreMatch = gameObjectives.FirstOrDefault(o => 
+                o.StartsWith(coreName, StringComparison.OrdinalIgnoreCase) ||
+                o.Contains(coreName));
+            if (coreMatch != null)
+                return coreMatch;
+            
+            // 方法3: 尝试从游戏目标中提取名称部分进行匹配
+            // 游戏目标格式可能是: "怪物名: 0/8" 或 "怪物名 slain: 0/8"
+            foreach (string gameObj in gameObjectives)
+            {
+                // 提取冒号前的部分
+                string gameCoreName = gameObj;
+                int colonIndex = gameObj.IndexOf(':');
+                if (colonIndex > 0)
+                {
+                    gameCoreName = gameObj.Substring(0, colonIndex).Trim();
+                }
+                
+                // 移除游戏目标中的后缀
+                foreach (string suffix in suffixesToStrip)
+                {
+                    if (gameCoreName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        gameCoreName = gameCoreName.Substring(0, gameCoreName.Length - suffix.Length);
+                        break;
+                    }
+                }
+                
+                // 比较核心名称
+                if (string.Equals(gameCoreName, coreName, StringComparison.OrdinalIgnoreCase))
+                    return gameObj;
+                
+                // 模糊匹配：一个包含另一个
+                if (gameCoreName.Contains(coreName) || coreName.Contains(gameCoreName))
+                    return gameObj;
+            }
+            
+            // 方法4: 使用 Levenshtein 距离进行模糊匹配（针对细微差异）
+            // 如果核心名称长度大于3，允许一定的编辑距离
+            if (coreName.Length > 3)
+            {
+                foreach (string gameObj in gameObjectives)
+                {
+                    string gameCoreName = gameObj;
+                    int colonIndex = gameObj.IndexOf(':');
+                    if (colonIndex > 0)
+                    {
+                        gameCoreName = gameObj.Substring(0, colonIndex).Trim();
+                    }
+                    
+                    // 简单的相似度检查：共同字符比例
+                    int commonChars = coreName.Count(c => gameCoreName.Contains(c));
+                    float similarity = (float)commonChars / coreName.Length;
+                    
+                    if (similarity >= 0.7f) // 70% 相似度
+                    {
+                        Logger.LogDebug($"Fuzzy matched '{coreName}' to '{gameCoreName}' (similarity: {similarity:P0})");
+                        return gameObj;
+                    }
+                }
+            }
+            
+            return null;
         }
 
         public float GetClosestQuestGiverDistance(Vector3 myPosition)
