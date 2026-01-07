@@ -1,0 +1,6 @@
+# 项目文件使用 union 合并策略
+*.csproj merge=union
+*.sln merge=union
+
+# 或者对于特定文件使用 ours/theirs 策略
+# *.csproj merge=ours  # 保留本地版本
