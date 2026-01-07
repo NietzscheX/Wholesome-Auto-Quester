@@ -2,12 +2,12 @@
 {
     internal class AQModelWorldMapArea
     {
-        public int mapID { get; }
-        public int areaID { get; }
-        public string areaName { get; }
-        public double locLeft { get; }
-        public double locRight { get; }
-        public double locTop { get; }
-        public double locBottom { get; }
+        public int mapID { get; set; }
+        public int areaID { get; set; }
+        public string areaName { get; set; }
+        public double locLeft { get; set; }
+        public double locRight { get; set; }
+        public double locTop { get; set; }
+        public double locBottom { get; set; }
     }
 }
