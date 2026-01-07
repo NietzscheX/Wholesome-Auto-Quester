@@ -1,6 +1,6 @@
-# 项目文件使用 union 合并策略
+# 项目文件: 手动处理合并冲突
+# 不要自动合并 HintPath 改动
 *.csproj merge=union
 *.sln merge=union
 
-# 或者对于特定文件使用 ours/theirs 策略
-# *.csproj merge=ours  # 保留本地版本
+# 对于跨平台开发，建议使用统一的 Dependencies 目录
