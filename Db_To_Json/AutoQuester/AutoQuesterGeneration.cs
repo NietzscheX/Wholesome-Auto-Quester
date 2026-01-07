@@ -48,7 +48,7 @@ namespace Db_To_Json.AutoQuester
             // ---------------- INDICES CREATION ----------------
             // 跳过索引创建以避免MySQL/SQLite兼容性问题
             // 索引对数据生成不是必需的，只是优化查询速度
-            Console.WriteLine($"Skipping index creation (not required for generation)\");
+            Console.WriteLine($"Skipping index creation (not required for generation)");
 
             // ---------------- WORLD MAP AREAS ----------------
             _allWorldMapAreas = QueryWorldMapAreas(con);
