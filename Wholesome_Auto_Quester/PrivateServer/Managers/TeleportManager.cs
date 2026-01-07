@@ -73,9 +73,14 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
         /// <summary>
         /// 查找最优传送点
         /// </summary>
+        /// <param name="targetPos">目标位置</param>
+        /// <param name="targetContinent">目标大陆ID</param>
+        /// <param name="playerFaction">玩家阵营</param>
+        /// <param name="skipWalkDistanceCheck">跳过步行距离检查（用于返回传送，只检查是否在同一大陆）</param>
         public TeleportLocation FindBestTeleportLocation(Vector3 targetPos, 
                                                           int targetContinent,
-                                                          string playerFaction)
+                                                          string playerFaction,
+                                                          bool skipWalkDistanceCheck = false)
         {
             if (_config.TeleportLocations == null || _config.TeleportLocations.Count == 0)
             {
@@ -113,6 +118,13 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                 bestLocation.Position.Z
             );
             float walkDistance = bestPos.DistanceTo(targetPos);
+            
+            // 对于返回传送，跳过步行距离检查（只要在同一大陆就行）
+            if (skipWalkDistanceCheck)
+            {
+                Logging.Write($"[WAQ-Teleport] ✓ 选择返回传送点: {bestLocation.Name} (传送后距原位置: {walkDistance:F1} 码)");
+                return bestLocation;
+            }
             
             // 确保传送后的步行距离在合理范围内
             if (walkDistance > _config.TeleportSettings.MaxWalkDistanceAfterTeleport)

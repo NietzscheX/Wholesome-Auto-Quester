@@ -191,10 +191,14 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             Logging.Write($"[WAQ-Equipment] Saved original position: ({_savedPosX:F1}, {_savedPosY:F1}, {_savedPosZ:F1}) MapId: {_savedMapId}");
             
             // 从 teleport_locations.yml 查找当前位置附近的最佳传送点
+            // 对于返回传送，跳过步行距离检查（只要在同一大陆就行）
             if (teleportManager != null)
             {
                 string faction = TeleportManager.GetPlayerFaction();
-                _savedReturnLocation = teleportManager.FindBestTeleportLocation(pos, _savedMapId, faction);
+                _savedReturnLocation = teleportManager.FindBestTeleportLocation(
+                    pos, _savedMapId, faction, 
+                    skipWalkDistanceCheck: true  // 返回传送不限制距离
+                );
                 
                 if (_savedReturnLocation != null)
                 {
