@@ -467,6 +467,9 @@
 			$(PostBuildEventDependsOn);
 			PostBuildMacros;
 		</PostBuildEventDependsOn>
-    <PostBuildEvent></PostBuildEvent>
+<PostBuildEvent>
+if not exist "$(ProjectDir)Compiled" mkdir "$(ProjectDir)Compiled"
+xcopy /Y /I "$(TargetDir)Wholesome_Auto_Quester.dll" "$(ProjectDir)Compiled\"
+</PostBuildEvent>
   </PropertyGroup>
 </Project>
