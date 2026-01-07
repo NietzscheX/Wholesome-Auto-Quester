@@ -717,7 +717,7 @@ namespace Db_To_Json.AutoQuester
             string queryCreature = $@"
                 SELECT *
                 FROM creature
-                WHERE id = {creatureId}
+                WHERE id1 = {creatureId}
                 AND (map = 0 OR map = 1 OR map = 530 OR map = 571)
             ";
             List<AQModelCreature> result = con.Query<AQModelCreature>(queryCreature).ToList();
