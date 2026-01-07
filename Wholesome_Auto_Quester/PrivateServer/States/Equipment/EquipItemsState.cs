@@ -40,8 +40,17 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Equipment
             
             _equipmentManager.ExecuteEquipItems();
             
-            Logging.Write("[WAQ-Private] Equipment refresh complete");
-            _equipmentManager.SetPhase(Managers.EquipmentManager.EquipmentPhase.Idle);
+            // 切换到传送返回阶段（如果有保存的返回点）
+            if (_equipmentManager.HasSavedReturnLocation)
+            {
+                Logging.Write("[WAQ-Private] Equipment complete, preparing to teleport back...");
+                _equipmentManager.SetPhase(Managers.EquipmentManager.EquipmentPhase.TeleportingBack);
+            }
+            else
+            {
+                Logging.Write("[WAQ-Private] Equipment refresh complete (no return teleport)");
+                _equipmentManager.SetPhase(Managers.EquipmentManager.EquipmentPhase.Idle);
+            }
         }
     }
 }

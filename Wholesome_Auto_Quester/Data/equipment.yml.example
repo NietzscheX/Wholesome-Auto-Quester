@@ -1,0 +1,168 @@
+# ============================================
+# Wholesome Auto Quester - Equipment Configuration
+# 装备和训练配置文件
+# ============================================
+# 将此文件放置于 WRobot 根目录下的 Data 文件夹中
+# 文件路径: WRobot/Data/equipment.yml
+# ============================================
+
+# 全局设置
+GlobalSettings:
+  # 装备耐久度阈值 (百分比)，低于此值会触发装备更换
+  DurabilityThreshold: 10
+  
+  # 检查装备耐久度的间隔 (毫秒)
+  CheckIntervalMs: 60000
+  
+  # 保护物品列表 (这些物品 ID 永远不会被删除或卖出)
+  ProtectedItems:
+    - 6948   # 炉石
+    - 21650  # 礼包武器1
+    - 21244  # 礼包武器2
+
+# NPC 来源配置 (商人/训练师位置)
+Sources:
+  "starter_vendor":
+    Name: "新手装备商人"
+    Id: 100001        # NPC Entry ID
+    MapId: 0          # 0=东部王国, 1=卡利姆多, 530=外域, 571=诺森德
+    Position: "-8826.5, 626.3, 94.1"   # X, Y, Z 坐标
+    
+  "class_trainer":
+    Name: "职业训练师"
+    Id: 100002
+    MapId: 0
+    Position: "-8800.0, 650.0, 95.0"
+    
+  "supply_vendor":
+    Name: "消耗品商人"
+    Id: 100003
+    MapId: 0
+    Position: "-8830.0, 620.0, 94.0"
+
+# 礼包配置 (购买后需要使用的物品)
+Bundles:
+  - Id: 50000         # 礼包物品 Entry ID
+    Name: "新手装备礼包"
+    MenuPath:         # 购买路径 (如果需要通过对话菜单)
+      - "购买礼包"
+      - "新手装备"
+
+# 职业配置
+Classes:
+  # 战士 (ClassId = 1)
+  - ClassId: 1
+    Name: "Warrior"
+    
+    # 装备槽位配置
+    Slots:
+      MainHand:
+        ItemId: 21650           # 目标物品 Entry ID
+        BundleId: 50000         # 可选: 通过购买礼包获取
+        SourceKey: "starter_vendor"  # 对应 Sources 中的 key
+        Strategy: "Replace"     # Replace=替换低耐久, Ignore=忽略
+        AllowEmpty: false       # 是否允许该槽位为空
+        MenuPath: []            # 购买菜单路径
+        
+      OffHand:
+        ItemId: 21244
+        BundleId: 50000
+        SourceKey: "starter_vendor"
+        Strategy: "Replace"
+        AllowEmpty: true
+        
+      Chest:
+        ItemId: 21300
+        SourceKey: "starter_vendor"
+        Strategy: "Replace"
+        AllowEmpty: false
+        
+      Legs:
+        ItemId: 21301
+        SourceKey: "starter_vendor"
+        Strategy: "Replace"
+        AllowEmpty: false
+        
+      Feet:
+        ItemId: 21302
+        SourceKey: "starter_vendor"
+        Strategy: "Replace"
+        AllowEmpty: false
+        
+      Hands:
+        ItemId: 21303
+        SourceKey: "starter_vendor"
+        Strategy: "Replace"
+        AllowEmpty: false
+    
+    # 消耗品配置
+    Supplies:
+      "HealthPotion":
+        ItemId: 118              # 次级治疗药水
+        MinCount: 5              # 低于此数量触发购买
+        MaxCount: 20             # 购买到此数量
+        SourceKey: "supply_vendor"
+        MenuPath: []
+        
+      "Food":
+        ItemId: 117              # 美味巧克力
+        MinCount: 10
+        MaxCount: 40
+        SourceKey: "supply_vendor"
+        MenuPath: []
+
+  # 猎人 (ClassId = 3)
+  - ClassId: 3
+    Name: "Hunter"
+    Slots:
+      MainHand:
+        ItemId: 21650
+        SourceKey: "starter_vendor"
+        Strategy: "Replace"
+        AllowEmpty: false
+        
+      Ranged:
+        ItemId: 21400
+        SourceKey: "starter_vendor"
+        Strategy: "Replace"
+        AllowEmpty: false
+        
+    Supplies:
+      "Arrow":
+        ItemId: 2512             # 粗糙的箭
+        MinCount: 100
+        MaxCount: 1000
+        SourceKey: "supply_vendor"
+        MenuPath: []
+
+# 训练配置 (自动前往训练师)
+Training:
+  # 是否在偶数等级训练
+  TrainOnEvenLevels: true
+  
+  # 或者指定具体等级训练
+  TrainAtLevels:
+    - 2
+    - 4
+    - 6
+    - 8
+    - 10
+    - 12
+    - 14
+    - 16
+    - 18
+    - 20
+  
+  # 训练师 NPC 配置
+  TrainerNpcEntry: 100002       # 训练师 NPC Entry ID
+  TrainerMapId: 0               # 大陆 ID
+  TrainerPosition: "-8800.0, 650.0, 95.0"   # 训练师坐标
+  TrainerGossipOption: "训练"    # 对话选项文本
+  
+  # 传送配置 (使用自定义炉石)
+  UseCustomTeleport: true       # 是否使用自定义传送物品
+  HearthstoneEntry: 6948        # 标准炉石 Entry ID
+  TeleportItemEntry: 6948       # 自定义传送物品 Entry ID
+  TeleportMenuPath:             # 传送菜单导航路径
+    - "传送"
+    - "暴风城"

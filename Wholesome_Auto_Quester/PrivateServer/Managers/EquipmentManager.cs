@@ -20,7 +20,8 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             Idle,
             CleaningBags,
             PurchasingEquipment,
-            EquippingItems
+            EquippingItems,
+            TeleportingBack  // 返回原来位置
         }
         
         private EquipmentPhase _currentPhase = EquipmentPhase.Idle;
@@ -31,10 +32,25 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
         private EquipmentConfig _config;
         private ClassProfile _currentClassProfile;
         
+        // 保存的返回传送点（用于装备更换后返回）
+        private TeleportLocation _savedReturnLocation;
+        private float _savedPosX;
+        private float _savedPosY;
+        private float _savedPosZ;
+        private int _savedMapId;
+        
         public bool IsActive => _currentPhase != EquipmentPhase.Idle;
         public EquipmentPhase CurrentEquipmentPhase => _currentPhase;
         public EquipmentConfig Config => _config;
         public ClassProfile CurrentClassProfile => _currentClassProfile;
+        
+        // 暴露保存的位置和传送点
+        public float SavedPosX => _savedPosX;
+        public float SavedPosY => _savedPosY;
+        public float SavedPosZ => _savedPosZ;
+        public int SavedMapId => _savedMapId;
+        public TeleportLocation SavedReturnLocation => _savedReturnLocation;
+        public bool HasSavedReturnLocation => _savedReturnLocation != null;
         
         public void Initialize(string yamlPath)
         {
@@ -135,7 +151,7 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             return false;
         }
         
-        public void TriggerRefresh()
+        public void TriggerRefresh(TeleportManager teleportManager = null)
         {
             if (IsActive)
             {
@@ -149,7 +165,58 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                 return;
             }
             
+            // 保存当前位置并查找最佳返回传送点
+            SaveCurrentPosition(teleportManager);
+            
             _currentPhase = EquipmentPhase.CleaningBags;
+        }
+        
+        /// <summary>
+        /// 保存当前位置并查找最佳返回传送点
+        /// </summary>
+        public void SaveCurrentPosition(TeleportManager teleportManager = null)
+        {
+            var pos = ObjectManager.Me.Position;
+            _savedPosX = pos.X;
+            _savedPosY = pos.Y;
+            _savedPosZ = pos.Z;
+            _savedMapId = Usefuls.ContinentId;
+            
+            Logging.Write($"[WAQ-Equipment] Saved original position: ({_savedPosX:F1}, {_savedPosY:F1}, {_savedPosZ:F1}) MapId: {_savedMapId}");
+            
+            // 从 teleport_locations.yml 查找当前位置附近的最佳传送点
+            if (teleportManager != null)
+            {
+                string faction = TeleportManager.GetPlayerFaction();
+                _savedReturnLocation = teleportManager.FindBestTeleportLocation(pos, _savedMapId, faction);
+                
+                if (_savedReturnLocation != null)
+                {
+                    Logging.Write($"[WAQ-Equipment] ✓ Found return teleport point: {_savedReturnLocation.Name}");
+                    Logging.Write($"[WAQ-Equipment]   Menu path: [{string.Join(" > ", _savedReturnLocation.MenuPath ?? new List<string>())}]");
+                }
+                else
+                {
+                    Logging.Write("[WAQ-Equipment] ⚠ No suitable return teleport point found for current location");
+                }
+            }
+            else
+            {
+                Logging.Write("[WAQ-Equipment] ⚠ TeleportManager not available, return teleport disabled");
+            }
+        }
+        
+        /// <summary>
+        /// 清除保存的位置
+        /// </summary>
+        public void ClearSavedPosition()
+        {
+            _savedReturnLocation = null;
+            _savedPosX = 0;
+            _savedPosY = 0;
+            _savedPosZ = 0;
+            _savedMapId = 0;
+            Logging.Write("[WAQ-Equipment] Cleared saved position and return location");
         }
         
         public void SetPhase(EquipmentPhase phase)

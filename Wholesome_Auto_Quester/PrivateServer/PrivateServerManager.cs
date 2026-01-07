@@ -158,7 +158,7 @@ namespace Wholesome_Auto_Quester.PrivateServer
                 // 注册装备状态
                 if (settings.EnableStarterEquipment && _equipmentManager != null)
                 {
-                    var cleanBagsState = new CleanBagsState(_equipmentManager);
+                    var cleanBagsState = new CleanBagsState(_equipmentManager, _teleportManager);
                     cleanBagsState.Priority = priority++;
                     engine.AddState(cleanBagsState);
                     
@@ -170,7 +170,13 @@ namespace Wholesome_Auto_Quester.PrivateServer
                     equipState.Priority = priority++;
                     engine.AddState(equipState);
                     
-                    Logging.Write($"[WAQ-Private] Registered: Equipment States (Priority: {cleanBagsState.Priority}-{equipState.Priority})");
+                    // 注册传送返回状态
+                    var teleportBackEquipState = new TeleportBackFromEquipmentState(
+                        _equipmentManager, _equipmentConfig, _teleportManager);
+                    teleportBackEquipState.Priority = priority++;
+                    engine.AddState(teleportBackEquipState);
+                    
+                    Logging.Write($"[WAQ-Private] Registered: Equipment States (Priority: {cleanBagsState.Priority}-{teleportBackEquipState.Priority})");
                 }
                 
                 // 注册训练状态

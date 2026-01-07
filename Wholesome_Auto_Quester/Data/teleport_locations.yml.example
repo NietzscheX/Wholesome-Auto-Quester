@@ -1,0 +1,152 @@
+# ============================================
+# Wholesome Auto Quester - Teleport Locations Configuration
+# 传送位置配置文件
+# ============================================
+# 将此文件放置于 WRobot 根目录下的 Data 文件夹中
+# 文件路径: WRobot/Data/teleport_locations.yml
+# ============================================
+
+# 传送系统全局设置
+TeleportSettings:
+  # 是否启用智能传送
+  EnableSmartTeleport: true
+  
+  # 触发传送的最小距离 (码)
+  MinDistanceForTeleport: 500
+  
+  # 传送后最大允许步行距离 (码)
+  # 如果传送后到目标的距离超过此值，将不使用传送
+  MaxWalkDistanceAfterTeleport: 300
+  
+  # 跨大陆时总是使用传送
+  CrossContinentAlwaysTeleport: true
+  
+  # 传送冷却时间 (秒)
+  TeleportCooldown: 30
+  
+  # 炉石物品 Entry ID
+  HearthstoneItemEntry: 6948
+
+# 传送位置列表
+# 这些是玩家可以通过炉石/传送物品到达的位置
+TeleportLocations:
+  # ======== 联盟城市 ========
+  - Name: "暴风城 (Stormwind)"
+    Faction: "Alliance"         # Alliance/Horde/Neutral
+    Continent: 0                # 0=东部王国, 1=卡利姆多, 530=外域, 571=诺森德
+    Position: "-8826.5, 626.3, 94.1"
+    MenuPath:                   # 传送菜单导航路径
+      - "传送"
+      - "主城"
+      - "暴风城"
+      
+  - Name: "铁炉堡 (Ironforge)"
+    Faction: "Alliance"
+    Continent: 0
+    Position: "-4981.4, -881.5, 501.6"
+    MenuPath:
+      - "传送"
+      - "主城"
+      - "铁炉堡"
+      
+  - Name: "达纳苏斯 (Darnassus)"
+    Faction: "Alliance"
+    Continent: 1
+    Position: "9946.7, 2607.8, 1316.4"
+    MenuPath:
+      - "传送"
+      - "主城"
+      - "达纳苏斯"
+      
+  - Name: "艾索达 (Exodar)"
+    Faction: "Alliance"
+    Continent: 530
+    Position: "-3965.7, -11653.7, -138.8"
+    MenuPath:
+      - "传送"
+      - "主城"
+      - "艾索达"
+
+  # ======== 部落城市 ========
+  - Name: "奥格瑞玛 (Orgrimmar)"
+    Faction: "Horde"
+    Continent: 1
+    Position: "1629.4, -4373.3, 31.2"
+    MenuPath:
+      - "传送"
+      - "主城"
+      - "奥格瑞玛"
+      
+  - Name: "雷霆崖 (Thunder Bluff)"
+    Faction: "Horde"
+    Continent: 1
+    Position: "-1277.2, 126.5, 131.3"
+    MenuPath:
+      - "传送"
+      - "主城"
+      - "雷霆崖"
+      
+  - Name: "幽暗城 (Undercity)"
+    Faction: "Horde"
+    Continent: 0
+    Position: "1586.5, 239.6, -52.2"
+    MenuPath:
+      - "传送"
+      - "主城"
+      - "幽暗城"
+      
+  - Name: "银月城 (Silvermoon)"
+    Faction: "Horde"
+    Continent: 530
+    Position: "9473.1, -7279.2, 14.3"
+    MenuPath:
+      - "传送"
+      - "主城"
+      - "银月城"
+
+  # ======== 中立城市 ========
+  - Name: "沙塔斯 (Shattrath)"
+    Faction: "Neutral"
+    Continent: 530
+    Position: "-1838.2, 5301.8, -12.4"
+    MenuPath:
+      - "传送"
+      - "外域"
+      - "沙塔斯城"
+      
+  - Name: "达拉然 (Dalaran)"
+    Faction: "Neutral"
+    Continent: 571
+    Position: "5804.1, 624.8, 647.8"
+    MenuPath:
+      - "传送"
+      - "诺森德"
+      - "达拉然"
+      
+  # ======== 练级区域 ========
+  - Name: "西部荒野 (Westfall)"
+    Faction: "Alliance"
+    Continent: 0
+    Position: "-10608.2, 1082.2, 34.5"
+    MenuPath:
+      - "传送"
+      - "练级区"
+      - "西部荒野"
+      
+  - Name: "洛克莫丹 (Loch Modan)"
+    Faction: "Alliance"
+    Continent: 0
+    Position: "-5103.4, -3302.9, 298.1"
+    MenuPath:
+      - "传送"
+      - "练级区"
+      - "洛克莫丹"
+      
+  - Name: "贫瘠之地 (Barrens)"
+    Faction: "Horde"
+    Continent: 1
+    Position: "-578.7, -2620.5, 95.4"
+    MenuPath:
+      - "传送"
+      - "练级区"
+      - "贫瘠之地"

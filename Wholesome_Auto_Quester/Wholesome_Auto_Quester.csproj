@@ -433,6 +433,7 @@
     <Compile Include="PrivateServer\States\Equipment\EquipItemsState.cs" />
     <Compile Include="PrivateServer\States\Equipment\IdleEquipmentState.cs" />
     <Compile Include="PrivateServer\States\Equipment\PurchaseEquipmentState.cs" />
+    <Compile Include="PrivateServer\States\Equipment\TeleportBackFromEquipmentState.cs" />
     <Compile Include="PrivateServer\States\Training\HearthstoneState.cs" />
     <Compile Include="PrivateServer\States\Training\IdleTrainingState.cs" />
     <Compile Include="PrivateServer\States\Training\InteractWithTrainerState.cs" />
