@@ -118,7 +118,8 @@ namespace Wholesome_Auto_Quester.Bot
                     new Idle()
                 };
 
-                states = states.Reverse().ToArray();
+                //states = states.Reverse().ToArray();
+                Array.Reverse(states);
 
                 for (int i = 0; i < states.Length; i++)
                 {
