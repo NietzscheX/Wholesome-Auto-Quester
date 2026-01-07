@@ -136,7 +136,10 @@ namespace Wholesome_Auto_Quester.Bot
                 
                 // Register private server states with higher priority than core states
                 // These states will intercept when needed (e.g., long distance travel, equipment maintenance)
-                int maxPriority = Fsm.States.Count > 0 ? Fsm.States[Fsm.States.Count - 1].Priority + 1 : 20;
+                // Use Max() to correctly find the highest priority regardless of sort order
+                int maxPriority = Fsm.States.Count > 0 
+                    ? System.Linq.Enumerable.Max(Fsm.States, s => s.Priority) + 1 
+                    : 20;
                 PrivateServerManager.Instance.RegisterStates(Fsm, maxPriority);
                 
                 Fsm.States.Sort();
