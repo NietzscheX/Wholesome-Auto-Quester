@@ -20,7 +20,7 @@ namespace Db_To_Json.AutoQuester
         private static string _jsonFileName;
         private static string _zipName;
         private static string _AQJsonOutputPath;
-        private static readonly string _AQJsonCopyToPath = $"{Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName}{JSONGenerator.PathSep}Wholesome_Auto_Quester{JSONGenerator.PathSep}Database";
+        private static readonly string _AQJsonCopyToPath = $"{JSONGenerator.WorkingDirectory}{JSONGenerator.PathSep}Wholesome_Auto_Quester{JSONGenerator.PathSep}Database";
         private static string _zipFilePath;
         private static string _spellTableName;
         private static string _worldMapAreaTableName;
@@ -355,9 +355,13 @@ namespace Db_To_Json.AutoQuester
             Console.WriteLine($"Final: {_allSpells.Count} spells ({spellsBeforeDupesRm - _allSpells.Count}) dupes removed)");
             Console.WriteLine($"-----------------------------");
 
-            File.Delete(_AQJsonOutputPath);
-            File.Delete(_zipFilePath);
-            File.Delete(_AQJsonCopyToPath + $"{JSONGenerator.PathSep}{_jsonFileName}");
+
+            // 删除旧文件（如果存在）
+            if (File.Exists(_AQJsonOutputPath)) File.Delete(_AQJsonOutputPath);
+            if (File.Exists(_zipFilePath)) File.Delete(_zipFilePath);
+            string copyJsonPath = _AQJsonCopyToPath + $"{JSONGenerator.PathSep}{_jsonFileName}";
+            if (File.Exists(copyJsonPath)) File.Delete(copyJsonPath);
+
 
             // Create Json in output path
             using (StreamWriter file = File.CreateText(_AQJsonOutputPath))
