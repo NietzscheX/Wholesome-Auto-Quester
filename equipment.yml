@@ -1,0 +1,253 @@
+# ============================================================
+# WRobot WoW Private Server Auto Trainer Configuration
+# Target Framework: .NET / C#
+# ============================================================
+
+# Plugin Settings
+Plugin:
+  Enabled: true
+  EnableAutoTraining: true
+  EnableAutoEquipment: true
+
+# Training Configuration
+#技能训练配置 (Trainer NPC Entry: 80001)
+Training:
+  # 训练等级配置 - 在指定等级时自动回城学习技能
+  # 方式1: 使用 TrainOnEvenLevels: true 在所有偶数等级训练 (2,4,6,8...)
+  # 方式2: 使用 TrainAtLevels 列表指定具体等级 [10, 20, 30, 40, 50, 60]
+  TrainOnEvenLevels: false             # 是否在偶数等级自动训练 (如果使用 TrainAtLevels，设为 false)
+  TrainAtLevels: [10, 20, 30, 40, 50, 60]  # 指定在哪些等级回城学习技能
+  
+  # 训练师配置
+  TrainerNpcEntry: 80001               # 训练师NPC ID
+  TrainerMapId: 0                      # 训练师所在地图
+  TrainerGossipOption: "职业技能"        # 对话选项文本
+  TrainerPosition:                     # 训练师位置坐标
+    X: -8934.85
+    Y: -146.407
+    Z: 82.85
+    Type: "None"
+  
+  # 回城传送配置
+  UseCustomTeleport: true              # 是否使用自定义传送物品 (true=使用传送物品, false=使用炉石)
+  HearthstoneEntry: 6948               # 炉石物品ID (UseCustomTeleport=false时使用)
+  TeleportItemEntry: 6948              # 自定义传送道具ID (UseCustomTeleport=true时使用)
+  TeleportMenuPath: ["出生地区", "人类"]  # 传送物品的菜单路径 (如果传送物品有选择菜单)
+  
+  # ============================================================
+  # 智能传送系统 (Smart Teleport System) - 新功能!
+  # ============================================================
+  # 现在支持智能快捷传送功能！插件会自动判断距离:
+  #   - 跨大陆旅行: 自动使用传送
+  #   - 长距离(>500码): 自动使用传送
+  #   - 短距离(<500码): 正常跑路
+  # 
+  # 启用步骤:
+  #   1. 创建配置文件: teleport_locations.yml
+  #   2. 基于模板: teleport_locations.yml.example
+  #   3. 填写您的私服传送点坐标和菜单路径
+  #   4. 重启插件即可
+  # 
+  # 优势: 跨大陆传送从5-10分钟缩短到30秒以内!
+  # 详细配置请参考: teleport_locations.yml.example
+  # ============================================================
+
+
+# Equipment Management Settings
+GlobalSettings:
+  DurabilityThreshold: 10
+  AutoDestroyOld: true
+  StopIfNotFound: false
+  CheckIntervalMs: 30000
+  ProtectedItems: [1,6948,6950] # 时间海螺,炉石,速效药膏 
+
+# ------------------------------------------------------------
+# Acquisition Sources (NPC 数据库)
+# ------------------------------------------------------------
+Sources:
+  StarterNPC:
+    Id: 50002
+    Name: "新手商人"
+    MapId: 0
+    Position:
+      X: -8930.02
+      Y: -141.5619
+      Z: 82.47603
+      Type: "None"
+
+  ConsumableNPC:
+    Id: 9902
+    Name: "物资官"
+    MapId: 0
+    Position:
+      X: -8945.12
+      Y: -130.44
+      Z: 80.12
+      Type: "None"
+
+# ------------------------------------------------------------
+# Bundles (礼包配置)
+# ------------------------------------------------------------
+Bundles:
+  - Id: 75009  # 皮甲物理
+    Name: "盗贼套装-夜幕杀手"
+    SourceKey: "StarterNPC"
+    MenuPath: ["新手套装"]
+    ContainsItems: [16820, 16821, 16823, 16827, 16822, 16824, 16825, 16826] 
+
+# ------------------------------------------------------------
+# Class Profiles
+# ------------------------------------------------------------
+Classes:
+  - Name: "Rogue"
+    ClassId: 4
+    InitialSetup:
+      PriorityBundleId: 75009
+      AutoEquipOnEmpty: true
+
+    Slots:
+      Head:
+        ItemId: 16821
+        Strategy: "Replace"
+        BundleId: 75009
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Chest:
+        ItemId: 16820
+        Strategy: "Replace"
+        BundleId: 75009
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Shoulder:
+        ItemId: 16823
+        Strategy: "Replace"
+        BundleId: 75009
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Waist:
+        ItemId: 16827
+        Strategy: "Replace"
+        BundleId: 75009
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Legs:
+        ItemId: 16822
+        Strategy: "Replace"
+        BundleId: 75009
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Feet:
+        ItemId: 16824
+        Strategy: "Replace"
+        BundleId: 75009
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Wrist:
+        ItemId: 16825
+        Strategy: "Replace"
+        BundleId: 75009
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Hands:
+        ItemId: 16826
+        Strategy: "Replace"
+        BundleId: 75009
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      MainHand:
+        ItemId: 21650
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手武器"]
+        AllowEmpty: false
+      OffHand:
+        ItemId: 21244
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手武器"]
+        AllowEmpty: false
+      Ranged:
+        ItemId: 21616
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手武器"]
+        AllowEmpty: false
+      Neck:
+        ItemId: 21702 # 邪恶守卫咒符
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手散件"]
+      Back:
+        ItemId: 21710 # 堕落神明披风
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手散件"]
+      Finger1:
+        ItemId: 21677 # 其拉之怒
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手散件"]
+      Finger2:
+        ItemId: 21681 # 吞噬者之戒
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手散件"]
+      Trinket1:
+        ItemId: 21670 # 虫群卫士徽章
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手散件"]
+      Trinket2:
+        ItemId: 21670 # 虫群卫士徽章
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手散件"]
+        AllowEmpty: true
+        # AllowEmpty: false  # 默认为false，槽位不能为空
+        
+      # ===== 可选配置示例 =====
+      # 如果想让某个槽位允许为空（不强制装备），设置 AllowEmpty: true
+      # 示例1：允许Shirt槽位为空
+      # Shirt:
+      #   ItemId: 0
+      #   AllowEmpty: true
+      #   Strategy: "Ignore"
+      
+      # 示例2：完全忽略某个槽位的管理，使用 Strategy: "Ignore"
+      # Tabard:
+      #   Strategy: "Ignore"
+
+    Supplies:
+      Food:
+        ItemId: 34062  #魔法点心
+        MinCount: 20
+        MaxCount: 80
+        SourceKey: "StarterNPC"
+        MenuPath: ["杂货坐骑"]
+      InstantPoison:
+        ItemId: 6947   #速效药膏
+        MinCount: 0
+        MaxCount: 0
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手毒药"]
+      Bags:
+        ItemId: 10050  #魔纹包
+        SourceKey: "StarterNPC"
+        MenuPath: ["杂货坐骑"]

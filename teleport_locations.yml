@@ -1,0 +1,633 @@
+# =============================================
+# 传送点配置文件 - 简化版 (支持 Vector3 字符串)
+# =============================================
+# 使用方法: 
+#   1. 从 WRobot 开发者工具获取坐标
+#   2. 直接复制粘贴到 PositionString 字段
+#   3. 无需手动填写 X, Y, Z
+
+# 传送系统设置
+TeleportSettings:
+  EnableSmartTeleport: true
+  MinDistanceForTeleport: 500.0
+  CrossContinentAlwaysTeleport: true
+  MaxWalkDistanceAfterTeleport: 300.0
+  HearthstoneItemEntry: 6948
+  TeleportCooldown: 0
+
+# 传送点列表
+TeleportLocations:
+  # ========== 联盟主城 ==========
+  - Name: "暴风城"
+    MenuPath:
+      - "主城"
+      - "暴风城"
+    Continent: 0
+    PositionString: 'new Vector3(-8913.23, 554.63, 93.79, "None")'
+    Category: "主城"
+    Faction: "Alliance"
+    
+  - Name: "铁炉堡"
+    MenuPath:
+      - "主城"
+      - "铁炉堡"
+    Continent: 0
+    PositionString: 'new Vector3(-4923.17, -956.568, 501.513, "None")'
+    Category: "主城"
+    Faction: "Alliance"
+    
+  - Name: "达纳苏斯"
+    MenuPath:
+      - "主城"
+      - "达纳苏斯"
+    Continent: 1
+    PositionString: 'new Vector3(9945.49, 2609.89, 1316.26, "None")'
+    Category: "主城"
+    Faction: "Alliance"
+
+  - Name: "埃索达"
+    MenuPath:
+      - "主城"
+      - "埃索达"
+    Continent: 530
+    PositionString: 'new Vector3(-3969.11, -11592.9, -134.7873, "None")'
+    Category: "主城"
+    Faction: "Alliance"
+  
+  - Name: "藏宝海湾"
+    MenuPath:
+      - "主城"
+      - "藏宝海湾"
+    Continent: 0
+    PositionString: 'new Vector3(-14281.3, 552.586, 8.903807, "None")'
+    Category: "主城"
+    Faction: "Neutral"
+
+  
+  - Name: "加基森"
+    MenuPath:
+      - "主城"
+      - "加基森"
+    Continent: 1
+    PositionString: 'new Vector3(-7242.61, -3792.66, 9.67249, "None")'
+    Category: "主城"
+    Faction: "Neutral"
+
+  
+  - Name: "荆齿城"
+    MenuPath:
+      - "主城"
+      - "荆齿城"
+    Continent: 1
+    PositionString: 'new Vector3(-946.099, -3755.27, 5.87403, "None")'
+    Category: "主城"
+    Faction: "Neutral"
+
+  
+  - Name: "永望镇"
+    MenuPath:
+      - "主城"
+      - "永望镇"
+    Continent: 1
+    PositionString: 'new Vector3(6733.85, -4626.54, 721.927, "None")'
+    Category: "主城"
+    Faction: "Neutral"
+
+  
+  # ========== 部落主城 ==========
+  - Name: "奥格瑞玛"
+    MenuPath:
+      - "主城"
+      - "奥格瑞玛"
+    Continent: 1
+    PositionString: 'new Vector3(1676.21, -4315.29, 61.52, "None")'
+    Category: "主城"
+    Faction: "Horde"
+    
+  - Name: "幽暗城"
+    MenuPath:
+      - "主城"
+      - "幽暗城"
+    Continent: 0
+    PositionString: 'new Vector3(1586.48, 239.56, -52.15, "None")'
+    Category: "主城"
+    Faction: "Horde"
+    
+  - Name: "雷霆崖"
+    MenuPath:
+      - "主城"
+      - "雷霆崖"
+    Continent: 1
+    PositionString: 'new Vector3(-1277.62, 122.06, 131.28, "None")'
+    Category: "主城"
+    Faction: "Horde"
+  
+  # ========== 中立城市 ==========
+  - Name: "沙塔斯城"
+    MenuPath:
+      - "主城"
+      - "沙塔斯城"
+    Continent: 530
+    PositionString: 'new Vector3(-1838.16, 5301.79, -12.43, "None")'
+    Category: "主城"
+    Faction: "Neutral"
+    
+  - Name: "达拉然"
+    MenuPath:
+      - "主城"
+      - "达拉然"
+    Continent: 571
+    PositionString: 'new Vector3(5804.15, 624.77, 647.77, "None")'
+    Category: "主城"
+    Faction: "Neutral"
+
+  # ========== 出生地 ==========
+  - Name: "人类"
+    MenuPath:
+      - "出生地"
+      - "人类"
+    Continent: 0
+    PositionString: 'new Vector3(-8949.95, -132.493, 83.5312, "None")'
+    Category: "出生地"
+    Faction: "Neutral"
+
+  - Name: "矮人"
+    MenuPath:
+      - "出生地"
+      - "矮人"
+    Continent: 0
+    PositionString: 'new Vector3(-6240.32, 331.033, 382.758, "None")'
+    Category: "出生地"
+    Faction: "Neutral"
+
+  - Name: "矮人"
+    MenuPath:
+      - "出生地"
+      - "矮人"
+    Continent: 0
+    PositionString: 'new Vector3(-6240.32, 331.033, 382.758, "None")'
+    Category: "出生地"
+    Faction: "Neutral"
+
+  - Name: "侏儒"
+    MenuPath:
+      - "出生地"
+      - "侏儒"
+    Continent: 0
+    PositionString: 'new Vector3(-6240.32, 331.033, 382.758, "None")'
+    Category: "出生地"
+    Faction: "Neutral"
+
+  - Name: "德莱尼"
+    MenuPath:
+      - "出生地"
+      - "德莱尼"
+    Continent: 530
+    PositionString: 'new Vector3(-3961.64, -13931.2, 100.614, "None")'
+    Category: "出生地"
+    Faction: "Neutral"
+
+  - Name: "暗夜精灵"
+    MenuPath:
+      - "出生地"
+      - "暗夜精灵"
+    Continent: 1
+    PositionString: 'new Vector3(10311.3, 832.463, 1326.407, "None")'
+    Category: "出生地"
+    Faction: "Neutral"
+
+  #========= 东部王国 ===========
+  - Name: "阿拉希高地"
+    MenuPath:
+      - "东部王国"
+      - "阿拉希高地"
+    Continent: 0
+    PositionString: 'new Vector3(-1584.45, -2704.06, 35.4168, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "荒芜之地"
+    MenuPath:
+      - "东部王国"
+      - "荒芜之地"
+    Continent: 0
+    PositionString: 'new Vector3(-6782.56, -3128.13, 240.48, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "诅咒之地"
+    MenuPath:
+      - "东部王国"
+      - "诅咒之地"
+    Continent: 0
+    PositionString: 'new Vector3(-11184.7, -3019.31, 7.292291, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "燃烧平原"
+    MenuPath:
+      - "东部王国"
+      - "燃烧平原"
+    Continent: 0
+    PositionString: 'new Vector3(-7979.77, -2105.71, 127.91, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "逆风小径"
+    MenuPath:
+      - "东部王国"
+      - "逆风小径"
+    Continent: 0
+    PositionString: 'new Vector3(-10461.3, -1733.24, 86.54, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "丹莫罗"
+    MenuPath:
+      - "东部王国"
+      - "丹莫罗"
+    Continent: 0
+    PositionString: 'new Vector3(-5603.75, -482.7, 396.98, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "墨色森林"
+    MenuPath:
+      - "东部王国"
+      - "墨色森林"
+    Continent: 0
+    PositionString: 'new Vector3(-10531.7, -1281.91, 38.85, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "东瘟疫之地"
+    MenuPath:
+      - "东部王国"
+      - "东瘟疫之地"
+    Continent: 0
+    PositionString: 'new Vector3(2280.64, -5275.05, 82.01, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "艾尔文森林"
+    MenuPath:
+      - "东部王国"
+      - "艾尔文森林"
+    Continent: 0
+    PositionString: 'new Vector3(-9449.05, 64.839, 56.11, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "永歌森林"
+    MenuPath:
+      - "东部王国"
+      - "永歌森林"
+    Continent: 0
+    PositionString: 'new Vector3(9336.9, -7278.4, 13.6, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "奥特兰克山谷"
+    MenuPath:
+      - "东部王国"
+      - "奥特兰克山谷"
+    Continent: 0
+    PositionString: 'new Vector3(521.247, -512.2, 279.353, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "希尔斯布莱德丘陵"
+    MenuPath:
+      - "东部王国"
+      - "希尔斯布莱德丘陵"
+    Continent: 0
+    PositionString: 'new Vector3(-385.8, -787.95, 54.66, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "洛克莫丹"
+    MenuPath:
+      - "东部王国"
+      - "洛克莫丹"
+    Continent: 0
+    PositionString: 'new Vector3(-5405.85, -2894.15, 341.972, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "赤脊山"
+    MenuPath:
+      - "东部王国"
+      - "赤脊山"
+    Continent: 0
+    PositionString: 'new Vector3(-9447.8, -2270.85, 71.8224, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "灼热峡谷"
+    MenuPath:
+      - "东部王国"
+      - "灼热峡谷"
+    Continent: 0
+    PositionString: 'new Vector3(-6686.33, -1198.55, 240.026, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "银松森林"
+    MenuPath:
+      - "东部王国"
+      - "银松森林"
+    Continent: 0
+    PositionString: 'new Vector3(1491.45, 635.066, 46.544, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "荆棘谷"
+    MenuPath:
+      - "东部王国"
+      - "荆棘谷"
+    Continent: 0
+    PositionString: 'new Vector3(-11921.7, -59.5439, 39.726, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "悲伤沼泽"
+    MenuPath:
+      - "东部王国"
+      - "悲伤沼泽"
+    Continent: 0
+    PositionString: 'new Vector3(-10368.6, -2731.3, 21.653, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "辛特兰"
+    MenuPath:
+      - "东部王国"
+      - "辛特兰"
+    Continent: 0
+    PositionString: 'new Vector3(112.406, -3929.74, 136.358, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "提瑞斯法林地"
+    MenuPath:
+      - "东部王国"
+      - "提瑞斯法林地"
+    Continent: 0
+    PositionString: 'new Vector3(2028.65, 164.8, 33.867, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "西瘟疫之地"
+    MenuPath:
+      - "东部王国"
+      - "西瘟疫之地"
+    Continent: 0
+    PositionString: 'new Vector3(1743.68, -1723.85, 59.66, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "西部荒野"
+    MenuPath:
+      - "东部王国"
+      - "西部荒野"
+    Continent: 0
+    PositionString: 'new Vector3(-9829.61, 866.925, 25.85, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+  - Name: "湿地"
+    MenuPath:
+      - "东部王国"
+      - "湿地"
+    Continent: 0
+    PositionString: 'new Vector3(-3517.75, -913.4, 8.866, "None")'
+    Category: "东部王国"
+    Faction: "Neutral"
+
+  #========= 卡利姆多 ===========
+  - Name: "灰谷"
+    MenuPath:
+      - "卡利姆多"
+      - "灰谷"
+    Continent: 1
+    PositionString: 'new Vector3(1919.77, -2169.68, 94.67, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "艾萨拉"
+    MenuPath:
+      - "卡利姆多"
+      - "艾萨拉"
+    Continent: 1
+    PositionString: 'new Vector3(3117.12, -4387.97, 91.905, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "秘蓝岛"
+    MenuPath:
+      - "卡利姆多"
+      - "秘蓝岛"
+    Continent: 1
+    PositionString: 'new Vector3(-4192.62, -12576.7, 36.7598, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "秘血岛"
+    MenuPath:
+      - "卡利姆多"
+      - "秘血岛"
+    Continent: 1
+    PositionString: 'new Vector3(-2095.67, -11841.1, 51.1557, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "黑海岸"
+    MenuPath:
+      - "卡利姆多"
+      - "黑海岸"
+    Continent: 1
+    PositionString: 'new Vector3(6463.25, 683.986, 8.9279, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "凄凉之地"
+    MenuPath:
+      - "卡利姆多"
+      - "凄凉之地"
+    Continent: 1
+    PositionString: 'new Vector3(-656.056, 1510.12, 88.37, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "杜隆塔尔"
+    MenuPath:
+      - "卡利姆多"
+      - "杜隆塔尔"
+    Continent: 1
+    PositionString: 'new Vector3(-999.73, -4895.38, 1.6748, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "尘泥沼泽"
+    MenuPath:
+      - "卡利姆多"
+      - "尘泥沼泽"
+    Continent: 1
+    PositionString: 'new Vector3(-3350.12, -3064.85, 33.036, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "费伍德森林"
+    MenuPath:
+      - "卡利姆多"
+      - "费伍德森林"
+    Continent: 1
+    PositionString: 'new Vector3(3898.8, -1283.33, 220.519, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "菲拉斯"
+    MenuPath:
+      - "卡利姆多"
+      - "菲拉斯"
+    Continent: 1
+    PositionString: 'new Vector3(-4808.31, 1040.51, 103.769, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "月光林地"
+    MenuPath:
+      - "卡利姆多"
+      - "月光林地"
+    Continent: 1
+    PositionString: 'new Vector3(7518.79, -2493.7, 454.185, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "莫高雷"
+    MenuPath:
+      - "卡利姆多"
+      - "莫高雷"
+    Continent: 1
+    PositionString: 'new Vector3(-2969.43, 191.017, 70.847, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "希利苏斯"
+    MenuPath:
+      - "卡利姆多"
+      - "希利苏斯"
+    Continent: 1
+    PositionString: 'new Vector3(-6800.77, 536.288, -1.04, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "石爪山脉"
+    MenuPath:
+      - "卡利姆多"
+      - "石爪山脉"
+    Continent: 1
+    PositionString: 'new Vector3(1574.89, 1031.57, 137.442, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "塔纳利斯"
+    MenuPath:
+      - "卡利姆多"
+      - "塔纳利斯"
+    Continent: 1
+    PositionString: 'new Vector3(-6940.91, -3725.7, 48.938, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "泰达希尔"
+    MenuPath:
+      - "卡利姆多"
+      - "泰达希尔"
+    Continent: 1
+    PositionString: 'new Vector3(9889.03, 915.869, 1307.43, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "贫瘠之地"
+    MenuPath:
+      - "卡利姆多"
+      - "贫瘠之地"
+    Continent: 1
+    PositionString: 'new Vector3(-527.01, -1572.98, 91.666, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "千针石林"
+    MenuPath:
+      - "卡利姆多"
+      - "千针石林"
+    Continent: 1
+    PositionString: 'new Vector3(-5604.02, -3363.12, -38.629, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "安戈洛环形山"
+    MenuPath:
+      - "卡利姆多"
+      - "安戈洛环形山"
+    Continent: 1
+    PositionString: 'new Vector3(-6291.55, -1158.62, -258.138, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+  - Name: "冬泉谷"
+    MenuPath:
+      - "卡利姆多"
+      - "冬泉谷"
+    Continent: 1
+    PositionString: 'new Vector3(6658.57, -4553.48, 718.019, "None")'
+    Category: "卡利姆多"
+    Faction: "Neutral"
+
+
+  #========= 外域地图 ===========
+  - Name: "地狱火半岛"
+    MenuPath:
+      - "外域地图"
+      - "地狱火半岛"
+    Continent: 530
+    PositionString: 'new Vector3(-207.335, 2035.92, 96.46, "None")'
+    Category: "外域地图"
+    Faction: "Neutral"
+  - Name: "赞加沼泽"
+    MenuPath:
+      - "外域地图"
+      - "赞加沼泽"
+    Continent: 530
+    PositionString: 'new Vector3(-220.297, 5378.58, 23.32, "None")'
+    Category: "外域地图"
+    Faction: "Neutral"
+  - Name: "泰罗卡森林"
+    MenuPath:
+      - "外域地图"
+      - "泰罗卡森林"
+    Continent: 530
+    PositionString: 'new Vector3(-2266.23, 4244.73, 1.47728, "None")'
+    Category: "外域地图"
+    Faction: "Neutral"
+  - Name: "纳格兰"
+    MenuPath:
+      - "外域地图"
+      - "纳格兰"
+    Continent: 530
+    PositionString: 'new Vector3(-1610.85, 7733.62, -17.277, "None")'
+    Category: "外域地图"
+    Faction: "Neutral"
+  - Name: "虚空风暴"
+    MenuPath:
+      - "外域地图"
+      - "虚空风暴"
+    Continent: 530
+    PositionString: 'new Vector3(3271.2, 3811.61, 143.153, "None")'
+    Category: "外域地图"
+    Faction: "Neutral"
+  - Name: "影月谷"
+    MenuPath:
+      - "外域地图"
+      - "影月谷"
+    Continent: 530
+    PositionString: 'new Vector3(-3681.01, 2350.76, 76.587, "None")'
+    Category: "外域地图"
+    Faction: "Neutral"
+
+# =============================================
+# 配置说明
+# =============================================
+# 
+# 1. 如何获取坐标 (使用 WRobot 开发者工具):
+#    - 在游戏中传送到目标位置
+#    - 在 WRobot 开发者工具中获取当前位置
+#    - 会显示类似: new Vector3(-4923.17, -956.568, 501.513, "None")
+#    - 直接复制整个字符串到 PositionString 字段即可!
+#
+# 2. 两种配置方式 (任选其一):
+#    
+#    方式1: 使用 PositionString (推荐!)
+#    PositionString: 'new Vector3(-4923.17, -956.568, 501.513, "None")'
+#    
+#    方式2: 手动填写 X, Y, Z
+#    Position:
+#      X: -4923.17
+#      Y: -956.568
+#      Z: 501.513
+#
+# 3. 大陆ID对照:
+#    0   = 东部王国 (Eastern Kingdoms)
+#    1   = 卡利姆多 (Kalimdor)
+#    530 = 外域 (Outland)
+#    571 = 诺森德 (Northrend)
+#
+# 4. 菜单路径说明:
+#    - 按照实际菜单结构从上到下依次填写
+#    - 例如: 主城 -> 暴风城
+#    - 文本必须与游戏内菜单匹配
+#
+# 5. 阵营设置:
+#    - Alliance: 仅联盟可用
+#    - Horde: 仅部落可用
+#    - Neutral: 双方都可用
