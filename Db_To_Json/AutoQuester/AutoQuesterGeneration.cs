@@ -577,10 +577,10 @@ namespace Db_To_Json.AutoQuester
         private static List<AQModelAreaTrigger> QueryAreasToExplore(IDbConnection con, int questId)
         {
             string query = $@"
-                SELECT a.ContinentID, a.x PositionX, a.y PositionY, a.z PositionZ, a.radius Radius
+                SELECT a.entry AS ID, a.map AS ContinentId, a.x AS PositionX, a.y AS PositionY, a.z AS PositionZ, a.radius AS Radius
                 FROM areatrigger_involvedrelation ai
                 JOIN areatrigger a 
-                ON a.ID = ai.id
+                ON a.entry = ai.id
                 WHERE ai.quest = {questId}
             ";
             List<AQModelAreaTrigger> result = con.Query<AQModelAreaTrigger>(query).ToList();
