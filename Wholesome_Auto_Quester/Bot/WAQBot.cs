@@ -26,6 +26,7 @@ using wManager.Events;
 using wManager.Wow.Bot.States;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
+using Wholesome_Auto_Quester.PrivateServer;
 using Timer = robotManager.Helpful.Timer;
 
 namespace Wholesome_Auto_Quester.Bot
@@ -128,6 +129,19 @@ namespace Wholesome_Auto_Quester.Bot
                 }
 
                 Fsm.States.Sort();
+                
+                // ========== Private Server Features Integration ==========
+                // Initialize private server features (Smart Teleport, Starter Equipment, Auto Training)
+                PrivateServerManager.Instance.Initialize();
+                
+                // Register private server states with higher priority than core states
+                // These states will intercept when needed (e.g., long distance travel, equipment maintenance)
+                int maxPriority = Fsm.States.Count > 0 ? Fsm.States[Fsm.States.Count - 1].Priority + 1 : 20;
+                PrivateServerManager.Instance.RegisterStates(Fsm, maxPriority);
+                
+                Fsm.States.Sort();
+                // ========== End Private Server Features ==========
+                
                 Fsm.StartEngine(10, "_AutoQuester");
 
                 StopBotIf.LaunchNewThread();
@@ -174,6 +188,10 @@ namespace Wholesome_Auto_Quester.Bot
                 MovementEvents.OnSeemStuck -= SeemStuckHandler;
 
                 CustomClass.DisposeCustomClass();
+                
+                // Dispose private server features
+                PrivateServerManager.Reset();
+                
                 Fsm.StopEngine();
                 Fight.StopFight();
                 MovementManager.StopMove();

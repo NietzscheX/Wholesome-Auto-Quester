@@ -308,6 +308,9 @@
       <HintPath>..\Dependencies\wManager.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="YamlDotNet, Version=13.0.0.0, Culture=neutral, PublicKeyToken=ec19458f3c15af5e, processorArchitecture=MSIL">
+      <HintPath>..\packages\YamlDotNet.13.7.1\lib\net472\YamlDotNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <AppDesigner Include="Properties\" />
@@ -409,6 +412,35 @@
     <Compile Include="States\WAQTurboLoot.cs" />
     <Compile Include="States\WAQWaitResurrectionSickness.cs" />
     <Compile Include="WholesomeAQSettings.cs" />
+    <!-- Private Server Features -->
+    <Compile Include="PrivateServer\PrivateServerManager.cs" />
+    <Compile Include="PrivateServer\Config\YamlConfigLoader.cs" />
+    <Compile Include="PrivateServer\Models\Bundle.cs" />
+    <Compile Include="PrivateServer\Models\ClassProfile.cs" />
+    <Compile Include="PrivateServer\Models\EquipmentConfig.cs" />
+    <Compile Include="PrivateServer\Models\GlobalSettings.cs" />
+    <Compile Include="PrivateServer\Models\NpcSource.cs" />
+    <Compile Include="PrivateServer\Models\TeleportLocation.cs" />
+    <Compile Include="PrivateServer\Models\TrainingConfig.cs" />
+    <Compile Include="PrivateServer\Models\Vector3Position.cs" />
+    <Compile Include="PrivateServer\Helpers\NpcInteractionHelper.cs" />
+    <Compile Include="PrivateServer\Helpers\ShopHelper.cs" />
+    <Compile Include="PrivateServer\Helpers\TeleportHelper.cs" />
+    <Compile Include="PrivateServer\Managers\EquipmentManager.cs" />
+    <Compile Include="PrivateServer\Managers\TeleportManager.cs" />
+    <Compile Include="PrivateServer\Managers\TrainingManager.cs" />
+    <Compile Include="PrivateServer\States\Equipment\CleanBagsState.cs" />
+    <Compile Include="PrivateServer\States\Equipment\EquipItemsState.cs" />
+    <Compile Include="PrivateServer\States\Equipment\IdleEquipmentState.cs" />
+    <Compile Include="PrivateServer\States\Equipment\PurchaseEquipmentState.cs" />
+    <Compile Include="PrivateServer\States\Training\HearthstoneState.cs" />
+    <Compile Include="PrivateServer\States\Training\IdleTrainingState.cs" />
+    <Compile Include="PrivateServer\States\Training\InteractWithTrainerState.cs" />
+    <Compile Include="PrivateServer\States\Training\ResumeProductState.cs" />
+    <Compile Include="PrivateServer\States\Training\TeleportBackState.cs" />
+    <Compile Include="PrivateServer\States\Training\TravelToTrainerState.cs" />
+    <Compile Include="PrivateServer\States\Travel\SmartTravelState.cs" />
+    <Compile Include="WholesomeToolbox\QuestLocationBridge.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

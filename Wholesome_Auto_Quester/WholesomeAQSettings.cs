@@ -33,6 +33,42 @@ namespace Wholesome_Auto_Quester
         public bool BlacklistDangerousZones { get; set; }
         public bool AllowStopWatch { get; set; }
         public bool TurboLoot { get; set; }
+        
+        // ========== Private Server Features ==========
+        /// <summary>
+        /// 启用智能传送功能（使用炉石/传送物品进行长距离传送）
+        /// </summary>
+        public bool EnableSmartTeleport { get; set; }
+        
+        /// <summary>
+        /// 启用自动装备功能（自动购买和装备初始装备）
+        /// </summary>
+        public bool EnableStarterEquipment { get; set; }
+        
+        /// <summary>
+        /// 启用自动训练功能（自动前往训练师学习技能）
+        /// </summary>
+        public bool EnableAutoTraining { get; set; }
+        
+        /// <summary>
+        /// 传送物品 Entry ID（默认为炉石 6948）
+        /// </summary>
+        public int TeleportItemEntry { get; set; }
+        
+        /// <summary>
+        /// 触发传送的最小距离（码）
+        /// </summary>
+        public float MinTeleportDistance { get; set; }
+        
+        /// <summary>
+        /// 装备配置文件路径（相对于 WRobot 根目录）
+        /// </summary>
+        public string EquipmentConfigPath { get; set; }
+        
+        /// <summary>
+        /// 传送位置配置文件路径（相对于 WRobot 根目录）
+        /// </summary>
+        public string TeleportConfigPath { get; set; }
 
         public WholesomeAQSettings()
         {
@@ -55,6 +91,15 @@ namespace Wholesome_Auto_Quester
             TurboLoot = true;
 
             AllowStopWatch = false;
+            
+            // Private Server Feature Defaults
+            EnableSmartTeleport = false;
+            EnableStarterEquipment = false;
+            EnableAutoTraining = false;
+            TeleportItemEntry = 6948; // Default to Hearthstone
+            MinTeleportDistance = 500f;
+            EquipmentConfigPath = @"Data\equipment.yml";
+            TeleportConfigPath = @"Data\teleport_locations.yml";
         }
 
         public static void RecordGuidAsUnreachable(uint guid)
