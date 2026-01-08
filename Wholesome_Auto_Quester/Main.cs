@@ -237,7 +237,7 @@ public class Main : IProduct
 
     private void EventsWithArgsHandler(string id, List<string> args)
     {
-        if (id == "UI_ERROR_MESSAGE" && args[0] == "You cannot attack that target.")
+        if (id == "UI_ERROR_MESSAGE" && args[0].Contains("你距离太远"))
         {
             if (ObjectManager.Target != null)
             {
