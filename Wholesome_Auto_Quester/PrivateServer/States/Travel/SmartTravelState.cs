@@ -19,7 +19,11 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
         private DateTime _lastTeleportAttempt = DateTime.MinValue;
         private const int CHECK_INTERVAL_SECONDS = 3;
         private const int TELEPORT_COOLDOWN_SECONDS = 10;
-        private const float MIN_DISTANCE_FOR_FLY = 200f; // 瞬移最小距离
+        
+        // 从设置读取瞬移阈值
+        private float MinDistanceForFly => WholesomeAQSettings.CurrentSetting.FlyMinDistance > 0 
+            ? WholesomeAQSettings.CurrentSetting.FlyMinDistance 
+            : 200f;
         
         public SmartTravelState(TeleportManager teleportManager)
         {
@@ -90,9 +94,9 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
                 
                 // 检查距离是否足够远，需要瞬移
                 float distance = ObjectManager.Me.Position.DistanceTo(questTarget.Location);
-                Logging.Write($"[WAQ-SmartTravel] 目标距离: {distance:F0} 码, 阈值: {MIN_DISTANCE_FOR_FLY} 码");
+                Logging.Write($"[WAQ-SmartTravel] 目标距离: {distance:F0} 码, 阈值: {MinDistanceForFly} 码");
                 
-                if (distance >= MIN_DISTANCE_FOR_FLY)
+                if (distance >= MinDistanceForFly)
                 {
                     Logging.Write($"[WAQ-SmartTravel] 距离足够远，准备瞬移");
                     return true;

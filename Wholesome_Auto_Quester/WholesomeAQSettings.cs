@@ -74,6 +74,11 @@ namespace Wholesome_Auto_Quester
         /// 是否启用瞬移功能（同大陆直接瞬移，跨大陆先传送再瞬移）
         /// </summary>
         public bool Fly { get; set; }
+        
+        /// <summary>
+        /// 瞬移最小距离阈值（码），距离超过此值才会触发瞬移
+        /// </summary>
+        public float FlyMinDistance { get; set; }
 
         public WholesomeAQSettings()
         {
@@ -106,6 +111,7 @@ namespace Wholesome_Auto_Quester
             EquipmentConfigPath = @"Data\equipment.yml";
             TeleportConfigPath = @"Data\teleport_locations.yml";
             Fly = false; // 默认关闭瞬移
+            FlyMinDistance = 200f; // 默认瞬移阈值 200 码
         }
 
         public static void RecordGuidAsUnreachable(uint guid)
