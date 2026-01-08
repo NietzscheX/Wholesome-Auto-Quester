@@ -222,10 +222,10 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                 }
             }
 
-            // 如果仍然是 (0,0,0)，尝试使用 Usefuls.PlayerPosition
+            // 如果仍然是 (0,0,0)，尝试使用 自身的地址
             if (pos.X == 0 && pos.Y == 0 && pos.Z == 0)
             {
-                pos = Usefuls.PlayerPosition;
+                pos = ObjectManager.Me.Position;
             }
 
             _savedPosX = pos.X;
