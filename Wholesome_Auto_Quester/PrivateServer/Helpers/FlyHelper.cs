@@ -14,6 +14,11 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
     /// </summary>
     public class FlyHelper
     {
+        private static readonly Random _random = new Random();
+        
+        // 最大单次瞬移距离（超过这个距离会分步瞬移）
+        private const float MAX_SINGLE_TELEPORT_DISTANCE = 500f;
+        
         /// <summary>
         /// 直接瞬移到指定坐标（仅同大陆有效）
         /// </summary>
@@ -38,12 +43,85 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
                 Logging.WriteError($"[FlyHelper] 无效的目标坐标: ({pos?.X}, {pos?.Y}, {pos?.Z})");
                 return false;
             }
+            
+            // 计算距离，如果太远则分步瞬移
+            float distance = ObjectManager.Me.Position.DistanceTo(pos);
+            if (distance > MAX_SINGLE_TELEPORT_DISTANCE)
+            {
+                Logging.Write($"[FlyHelper] 距离 {distance:F0} 码较远，将分步瞬移");
+                return StepTeleport(pos);
+            }
 
+            return DoSingleTeleport(pos);
+        }
+        
+        /// <summary>
+        /// 分步瞬移（减少被检测风险）
+        /// </summary>
+        private static bool StepTeleport(Vector3 finalPos)
+        {
+            Vector3 currentPos = ObjectManager.Me.Position;
+            float totalDistance = currentPos.DistanceTo(finalPos);
+            int steps = (int)Math.Ceiling(totalDistance / MAX_SINGLE_TELEPORT_DISTANCE);
+            
+            Logging.Write($"[FlyHelper] 分 {steps} 步瞬移");
+            
+            for (int i = 1; i <= steps; i++)
+            {
+                if (ObjectManager.Me.IsDead)
+                {
+                    Logging.WriteError("[FlyHelper] 分步瞬移中角色死亡");
+                    return false;
+                }
+                
+                // 计算中间点
+                float progress = (float)i / steps;
+                Vector3 stepTarget;
+                
+                if (i == steps)
+                {
+                    stepTarget = finalPos;
+                }
+                else
+                {
+                    stepTarget = new Vector3(
+                        currentPos.X + (finalPos.X - currentPos.X) * progress,
+                        currentPos.Y + (finalPos.Y - currentPos.Y) * progress,
+                        currentPos.Z + (finalPos.Z - currentPos.Z) * progress
+                    );
+                }
+                
+                Logging.Write($"[FlyHelper] 步骤 {i}/{steps}");
+                
+                if (!DoSingleTeleport(stepTarget))
+                {
+                    return false;
+                }
+                
+                // 步骤之间随机延迟（减少检测）
+                if (i < steps)
+                {
+                    int delay = _random.Next(500, 1500);
+                    Thread.Sleep(delay);
+                }
+            }
+            
+            return true;
+        }
+        
+        /// <summary>
+        /// 执行单次瞬移
+        /// </summary>
+        private static bool DoSingleTeleport(Vector3 pos)
+        {
             try
             {
                 // 停止当前移动
                 wManager.Wow.Helpers.MovementManager.StopMove();
-                Thread.Sleep(200);
+                
+                // 随机等待（减少检测）
+                int preDelay = _random.Next(100, 300);
+                Thread.Sleep(preDelay);
                 
                 int processId = (int)wManager.Wow.Memory.WowMemory.Memory.GetProcess().Id;
                 MemoryRobot.Memory memory = new MemoryRobot.Memory(processId);
@@ -63,8 +141,9 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
 
                 wManager.Wow.Helpers.Move.JumpOrAscend(wManager.Wow.Helpers.Move.MoveAction.PressKey, 100);
 
-                // 等待稳定
-                Thread.Sleep(1500);
+                // 等待稳定（随机延迟）
+                int stabilizeDelay = _random.Next(1200, 1800);
+                Thread.Sleep(stabilizeDelay);
                 
                 // 检查是否死亡（瞬移后可能掉落死亡）
                 if (ObjectManager.Me.IsDead)
@@ -74,6 +153,12 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
                 }
                 
                 Logging.Write($"[FlyHelper] ✓ 瞬移到 ({pos.X:F1}, {pos.Y:F1}, {pos.Z:F1})");
+                
+                // 额外等待让 PathFinder 初始化（随机延迟）
+                Logging.Write("[FlyHelper] 等待世界同步...");
+                int syncDelay = _random.Next(1500, 2500);
+                Thread.Sleep(syncDelay);
+                
                 return true;
             }
             catch (Exception ex)
