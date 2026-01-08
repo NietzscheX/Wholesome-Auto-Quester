@@ -63,6 +63,11 @@ namespace Wholesome_Auto_Quester.Bot
                 _objectScanner = new WowObjectScanner(_questTrackerGui);
                 _questManager = new QuestManager(_objectScanner, _questTrackerGui, _jsonManager, _continentManager);
                 _taskManager = new TaskManager(_objectScanner, _questManager, _grindManager, _questTrackerGui, _travelManager, _continentManager);
+                
+                // 注册任务位置提供者（供 FlyHelper 使用）
+                var locationProvider = new WholesomeToolbox.WAQLocationProvider(_taskManager);
+                WholesomeToolbox.QuestLocationBridge.RegisterProvider(locationProvider);
+                
                 DBCFaction.RecordReputations();
 
                 // Attach onlevelup for spell book:
@@ -191,6 +196,9 @@ namespace Wholesome_Auto_Quester.Bot
                 MovementEvents.OnSeemStuck -= SeemStuckHandler;
 
                 CustomClass.DisposeCustomClass();
+                
+                // 取消注册任务位置提供者
+                WholesomeToolbox.QuestLocationBridge.UnregisterProvider();
                 
                 // Dispose private server features
                 PrivateServerManager.Reset();

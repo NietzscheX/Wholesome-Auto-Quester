@@ -443,6 +443,7 @@
     <Compile Include="PrivateServer\States\Training\TravelToTrainerState.cs" />
     <Compile Include="PrivateServer\States\Travel\SmartTravelState.cs" />
     <Compile Include="WholesomeToolbox\QuestLocationBridge.cs" />
+    <Compile Include="WholesomeToolbox\WAQLocationProvider.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
