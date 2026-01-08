@@ -24,22 +24,54 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
                 Logging.WriteError("[FlyHelper] 瞬移开关未打开");
                 return false;
             }
+            
+            // 检查玩家是否死亡
+            if (ObjectManager.Me.IsDead)
+            {
+                Logging.WriteError("[FlyHelper] 玩家已死亡，无法瞬移");
+                return false;
+            }
+            
+            // 验证坐标是否有效
+            if (pos == null || pos == Vector3.Empty || (pos.X == 0 && pos.Y == 0 && pos.Z == 0))
+            {
+                Logging.WriteError($"[FlyHelper] 无效的目标坐标: ({pos?.X}, {pos?.Y}, {pos?.Z})");
+                return false;
+            }
 
             try
             {
+                // 停止当前移动
+                wManager.Wow.Helpers.MovementManager.StopMove();
+                Thread.Sleep(200);
+                
                 int processId = (int)wManager.Wow.Memory.WowMemory.Memory.GetProcess().Id;
                 MemoryRobot.Memory memory = new MemoryRobot.Memory(processId);
                 uint BaseAddress = (uint)memory.ReadInt32(0xCD87A8);
                 BaseAddress = (uint)memory.ReadInt32(BaseAddress + 0x34);
                 BaseAddress = (uint)memory.ReadInt32(BaseAddress + 0x24);
                 
+                // 在 Z 坐标上增加偏移量，防止模型穿透地面导致掉落
+                const float Z_OFFSET = 3.0f;
+                float safeZ = pos.Z + Z_OFFSET;
+                
                 memory.WriteFloat(BaseAddress + 0x798, pos.X);
                 memory.WriteFloat(BaseAddress + 0x79C, pos.Y);
-                memory.WriteFloat(BaseAddress + 0x7A0, pos.Z);
+                memory.WriteFloat(BaseAddress + 0x7A0, safeZ);
+                
+                Logging.Write($"[FlyHelper] 瞬移中... 目标: ({pos.X:F1}, {pos.Y:F1}, {safeZ:F1}) [Z+{Z_OFFSET}]");
 
                 wManager.Wow.Helpers.Move.JumpOrAscend(wManager.Wow.Helpers.Move.MoveAction.PressKey, 100);
 
-                Thread.Sleep(1000);
+                // 等待稳定
+                Thread.Sleep(1500);
+                
+                // 检查是否死亡（瞬移后可能掉落死亡）
+                if (ObjectManager.Me.IsDead)
+                {
+                    Logging.WriteError("[FlyHelper] 瞬移后角色死亡！");
+                    return false;
+                }
                 
                 Logging.Write($"[FlyHelper] ✓ 瞬移到 ({pos.X:F1}, {pos.Y:F1}, {pos.Z:F1})");
                 return true;
@@ -63,6 +95,28 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
             if (!WholesomeAQSettings.CurrentSetting.Fly)
             {
                 Logging.Write("[FlyHelper] 瞬移功能未启用");
+                return false;
+            }
+            
+            // 检查玩家是否死亡
+            if (ObjectManager.Me.IsDead)
+            {
+                Logging.WriteError("[FlyHelper] 玩家已死亡，无法瞬移");
+                return false;
+            }
+            
+            // 验证目标坐标
+            if (targetPos == null || targetPos == Vector3.Empty || 
+                (targetPos.X == 0 && targetPos.Y == 0 && targetPos.Z == 0))
+            {
+                Logging.WriteError($"[FlyHelper] 无效的目标坐标: ({targetPos?.X}, {targetPos?.Y}, {targetPos?.Z})");
+                return false;
+            }
+            
+            // 验证目标大陆
+            if (targetContinent < 0)
+            {
+                Logging.WriteError($"[FlyHelper] 无效的目标大陆: {targetContinent}");
                 return false;
             }
             
