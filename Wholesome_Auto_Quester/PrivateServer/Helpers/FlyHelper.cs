@@ -17,7 +17,7 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
         private static readonly Random _random = new Random();
         
         // 最大单次瞬移距离（超过这个距离会分步瞬移）
-        private const float MAX_SINGLE_TELEPORT_DISTANCE = 500f;
+        private const float MAX_SINGLE_TELEPORT_DISTANCE = 50000f;
         
         /// <summary>
         /// 直接瞬移到指定坐标（仅同大陆有效）

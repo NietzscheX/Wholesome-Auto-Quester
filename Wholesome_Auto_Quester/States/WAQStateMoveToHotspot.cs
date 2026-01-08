@@ -14,6 +14,9 @@ namespace Wholesome_Auto_Quester.States
 {
     class WAQStateMoveToHotspot : State, IWAQState
     {
+        private float _stopDistance = 5f;
+        private System.DateTime _arrivalTime = System.DateTime.MinValue;
+        private IWAQTask _lastTask;
         private ITaskManager _taskManager;
         private ITravelManager _travelManager;
         public override string DisplayName { get; set; } = "WAQ Move to hotspot";
@@ -59,7 +62,34 @@ namespace Wholesome_Auto_Quester.States
 
             if (task.Location.DistanceTo(ObjectManager.Me.Position) <= task.SearchRadius)
             {
-                task.PutTaskOnTimeout($"Couldn't find target");
+                if (task != _lastTask)
+                {
+                    _lastTask = task;
+                    _arrivalTime = System.DateTime.Now;
+                }
+                else if (_arrivalTime == System.DateTime.MinValue)
+                {
+                    _arrivalTime = System.DateTime.Now;
+                }
+
+                if (System.DateTime.Now - _arrivalTime > System.TimeSpan.FromSeconds(10))
+                {
+                    task.PutTaskOnTimeout($"Couldn't find target");
+                    _arrivalTime = System.DateTime.MinValue;
+                }
+                else
+                {
+                    if (MovementManager.InMovement && task.Location.DistanceTo(ObjectManager.Me.Position) < _stopDistance)
+                    {
+                        MovementManager.StopMove();
+                    }
+                    return;
+                }
+            }
+            else
+            {
+                 _arrivalTime = System.DateTime.MinValue;
+                 _lastTask = task;
             }
 
             ToolBox.CheckIfZReachable(task.Location);
