@@ -1097,7 +1097,7 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             Logging.Write("[WAQ-Equipment] Equipment cycle complete");
         }
 
-        private bool ShouldBuySupply(EquipmentSupply supply)
+        private bool ShouldBuySupply(SupplyItem supply)
         {
             return Lua.LuaDoString<bool>($@"
                 local itemId = {supply.ItemId};
