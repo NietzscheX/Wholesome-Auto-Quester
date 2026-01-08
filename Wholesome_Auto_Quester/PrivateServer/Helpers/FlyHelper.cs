@@ -130,7 +130,7 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
                 BaseAddress = (uint)memory.ReadInt32(BaseAddress + 0x24);
                 
                 // 在 Z 坐标上增加偏移量，防止模型穿透地面导致掉落
-                const float Z_OFFSET = 3.0f;
+                const float Z_OFFSET = 1f;
                 float safeZ = pos.Z + Z_OFFSET;
                 
                 memory.WriteFloat(BaseAddress + 0x798, pos.X);
@@ -139,7 +139,10 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
                 
                 Logging.Write($"[FlyHelper] 瞬移中... 目标: ({pos.X:F1}, {pos.Y:F1}, {safeZ:F1}) [Z+{Z_OFFSET}]");
 
-                wManager.Wow.Helpers.Move.JumpOrAscend(wManager.Wow.Helpers.Move.MoveAction.PressKey, 100);
+                //wManager.Wow.Helpers.Move.JumpOrAscend(wManager.Wow.Helpers.Move.MoveAction.PressKey, 100);
+                robotManager.Helpful.Keyboard.DownKey(wManager.Wow.Memory.WowMemory.Memory.WindowHandle, System.Windows.Forms.Keys.Left);
+                Thread.Sleep(robotManager.Helpful.Others.Random(10, 50));  
+                robotManager.Helpful.Keyboard.UpKey(wManager.Wow.Memory.WowMemory.Memory.WindowHandle, System.Windows.Forms.Keys.Left);
 
                 // 等待稳定（随机延迟）
                 int stabilizeDelay = _random.Next(1200, 1800);
