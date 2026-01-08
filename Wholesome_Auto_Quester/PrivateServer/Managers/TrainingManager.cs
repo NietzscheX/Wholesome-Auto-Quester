@@ -68,7 +68,7 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                 Logging.Write("[WAQ-Private] ⚠ Warning: Player position is (0,0,0), retrying...");
                 for (int i = 0; i < 10; i++)
                 {
-                    Thread.Sleep(200);
+                    System.Threading.Thread.Sleep(200);
                     pos = ObjectManager.Me.Position;
                     if (pos.X != 0 || pos.Y != 0 || pos.Z != 0) break;
                 }
