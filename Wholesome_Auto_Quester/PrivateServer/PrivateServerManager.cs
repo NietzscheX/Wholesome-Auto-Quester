@@ -51,7 +51,8 @@ namespace Wholesome_Auto_Quester.PrivateServer
                 var settings = WholesomeAQSettings.CurrentSetting;
                 
                 // 检查是否启用了任何私服功能
-                if (!settings.EnableSmartTeleport && !settings.EnableStarterEquipment && !settings.EnableAutoTraining)
+                if (!settings.EnableSmartTeleport && !settings.EnableStarterEquipment && 
+                    !settings.EnableAutoTraining && !settings.Fly)
                 {
                     Logging.Write("[WAQ-Private] No private server features enabled");
                     return;
@@ -60,11 +61,12 @@ namespace Wholesome_Auto_Quester.PrivateServer
                 Logging.Write("[WAQ-Private] ========================================");
                 Logging.Write("[WAQ-Private] Initializing Private Server Features");
                 Logging.Write("[WAQ-Private] ========================================");
+                Logging.Write($"[WAQ-Private] Fly (瞬移) Enabled: {settings.Fly}");
                 
                 string wrobotRoot = Others.GetCurrentDirectory;
                 
-                // 加载传送配置
-                if (settings.EnableSmartTeleport)
+                // 加载传送配置（当启用 Smart Teleport 或 Fly 时）
+                if (settings.EnableSmartTeleport || settings.Fly)
                 {
                     string teleportPath = Path.Combine(wrobotRoot, settings.TeleportConfigPath);
                     if (File.Exists(teleportPath))
@@ -75,7 +77,7 @@ namespace Wholesome_Auto_Quester.PrivateServer
                             // 更新传送设置
                             _teleportConfig.TeleportSettings.HearthstoneItemEntry = settings.TeleportItemEntry;
                             _teleportConfig.TeleportSettings.MinDistanceForTeleport = settings.MinTeleportDistance;
-                            _teleportConfig.TeleportSettings.EnableSmartTeleport = true;
+                            _teleportConfig.TeleportSettings.EnableSmartTeleport = settings.EnableSmartTeleport;
                             
                             _teleportManager = new TeleportManager(_teleportConfig);
                             Logging.Write($"[WAQ-Private] ✓ Smart Teleport initialized ({_teleportConfig.TeleportLocations?.Count ?? 0} locations)");
@@ -146,13 +148,22 @@ namespace Wholesome_Auto_Quester.PrivateServer
             
             try
             {
-                // 注册智能传送状态
-                if (settings.EnableSmartTeleport && _teleportManager != null)
+                // 注册智能传送状态（当启用 Smart Teleport 或 Fly 时）
+                if ((settings.EnableSmartTeleport || settings.Fly) && _teleportManager != null)
                 {
                     var smartTravelState = new SmartTravelState(_teleportManager);
                     smartTravelState.Priority = priority++;
                     engine.AddState(smartTravelState);
-                    Logging.Write($"[WAQ-Private] Registered: SmartTravelState (Priority: {smartTravelState.Priority})");
+                    string mode = settings.Fly ? "Fly Mode" : "Teleport Mode";
+                    Logging.Write($"[WAQ-Private] Registered: SmartTravelState ({mode}, Priority: {smartTravelState.Priority})");
+                }
+                else if (settings.Fly)
+                {
+                    // Fly 启用但没有 TeleportManager，创建一个不带传送功能的状态
+                    var smartTravelState = new SmartTravelState(null);
+                    smartTravelState.Priority = priority++;
+                    engine.AddState(smartTravelState);
+                    Logging.Write($"[WAQ-Private] Registered: SmartTravelState (Fly Only, Priority: {smartTravelState.Priority})");
                 }
                 
                 // 注册装备状态

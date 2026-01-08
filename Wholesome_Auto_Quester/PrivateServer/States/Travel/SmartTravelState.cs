@@ -46,20 +46,23 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
                 }
                 
                 // 检查是否启用了瞬移功能
-                if (!Helpers.FlyHelper.IsEnabled)
+                bool flyEnabled = Helpers.FlyHelper.IsEnabled;
+                if (!flyEnabled)
                 {
                     // 如果没启用瞬移，使用原来的传送点逻辑
                     return CheckForTeleportTravel();
                 }
                 
                 // 冷却检查
-                if ((DateTime.Now - _lastTeleportAttempt).TotalSeconds < TELEPORT_COOLDOWN_SECONDS)
+                var cooldownElapsed = (DateTime.Now - _lastTeleportAttempt).TotalSeconds;
+                if (cooldownElapsed < TELEPORT_COOLDOWN_SECONDS)
                 {
                     return false;
                 }
                 
                 // 检查间隔
-                if ((DateTime.Now - _lastCheckTime).TotalSeconds < CHECK_INTERVAL_SECONDS)
+                var checkElapsed = (DateTime.Now - _lastCheckTime).TotalSeconds;
+                if (checkElapsed < CHECK_INTERVAL_SECONDS)
                 {
                     return false;
                 }
@@ -69,6 +72,7 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
                 // 检查任务位置提供者
                 if (!WholesomeToolbox.QuestLocationBridge.IsProviderAvailable())
                 {
+                    Logging.Write("[WAQ-SmartTravel] 任务位置提供者不可用");
                     return false;
                 }
                 
@@ -86,9 +90,11 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
                 
                 // 检查距离是否足够远，需要瞬移
                 float distance = ObjectManager.Me.Position.DistanceTo(questTarget.Location);
+                Logging.Write($"[WAQ-SmartTravel] 目标距离: {distance:F0} 码, 阈值: {MIN_DISTANCE_FOR_FLY} 码");
+                
                 if (distance >= MIN_DISTANCE_FOR_FLY)
                 {
-                    Logging.Write($"[WAQ-SmartTravel] 检测到目标距离 {distance:F0} 码，准备瞬移");
+                    Logging.Write($"[WAQ-SmartTravel] 距离足够远，准备瞬移");
                     return true;
                 }
                 
