@@ -467,10 +467,27 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
 
         private void UseTeleportIfFar(robotManager.Helpful.Vector3 targetPos, int targetMapId)
         {
-            if (_config.Training == null || !_config.Training.UseCustomTeleport) return;
-
             float distance = ObjectManager.Me.Position.DistanceTo(targetPos);
             bool differentContinent = (int)wManager.Wow.Helpers.Usefuls.ContinentId != targetMapId;
+            
+            // 检查是否启用瞬移功能
+            if (Helpers.FlyHelper.IsEnabled)
+            {
+                Logging.Write($"[WAQ-Equipment] 瞬移功能已启用，使用智能旅行");
+                
+                if (Helpers.FlyHelper.SmartTravelTo(targetPos, targetMapId, _teleportManager))
+                {
+                    Logging.Write("[WAQ-Equipment] ✓ 瞬移成功");
+                    return;
+                }
+                else
+                {
+                    Logging.Write("[WAQ-Equipment] 瞬移失败，尝试使用传统传送方式");
+                }
+            }
+
+            // 传统传送逻辑
+            if (_config.Training == null || !_config.Training.UseCustomTeleport) return;
 
             if (differentContinent || distance > 1000)
             {

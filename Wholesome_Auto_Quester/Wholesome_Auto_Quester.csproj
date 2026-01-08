@@ -426,6 +426,7 @@
     <Compile Include="PrivateServer\Helpers\NpcInteractionHelper.cs" />
     <Compile Include="PrivateServer\Helpers\ShopHelper.cs" />
     <Compile Include="PrivateServer\Helpers\TeleportHelper.cs" />
+    <Compile Include="PrivateServer\Helpers\FlyHelper.cs" />
     <Compile Include="PrivateServer\Managers\EquipmentManager.cs" />
     <Compile Include="PrivateServer\Managers\TeleportManager.cs" />
     <Compile Include="PrivateServer\Managers\TrainingManager.cs" />

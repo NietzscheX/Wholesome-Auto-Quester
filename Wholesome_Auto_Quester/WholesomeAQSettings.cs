@@ -69,6 +69,11 @@ namespace Wholesome_Auto_Quester
         /// 传送位置配置文件路径（相对于 WRobot 根目录）
         /// </summary>
         public string TeleportConfigPath { get; set; }
+        
+        /// <summary>
+        /// 是否启用瞬移功能（同大陆直接瞬移，跨大陆先传送再瞬移）
+        /// </summary>
+        public bool Fly { get; set; }
 
         public WholesomeAQSettings()
         {
@@ -100,6 +105,7 @@ namespace Wholesome_Auto_Quester
             MinTeleportDistance = 500f;
             EquipmentConfigPath = @"Data\equipment.yml";
             TeleportConfigPath = @"Data\teleport_locations.yml";
+            Fly = false; // 默认关闭瞬移
         }
 
         public static void RecordGuidAsUnreachable(uint guid)

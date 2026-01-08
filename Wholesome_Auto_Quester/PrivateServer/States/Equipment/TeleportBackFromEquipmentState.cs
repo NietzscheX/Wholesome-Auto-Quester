@@ -56,7 +56,40 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Equipment
                 Logging.Write("[WAQ-Private] Step 4: Teleporting back to original area");
                 Logging.Write("[WAQ-Private] ========================================");
                 
-                // 检查是否有保存的返回传送点
+                // 获取保存的原始位置
+                var savedPos = new Vector3(
+                    _equipmentManager.SavedPosX,
+                    _equipmentManager.SavedPosY,
+                    _equipmentManager.SavedPosZ
+                );
+                int savedMapId = _equipmentManager.SavedMapId;
+                
+                int currentMapId = Usefuls.ContinentId;
+                float distance = ObjectManager.Me.Position.DistanceTo(savedPos);
+                
+                // 检查是否已经在目标位置附近
+                if (currentMapId == savedMapId && distance < 300)
+                {
+                    Logging.Write($"[WAQ-Private] Already close to original position ({distance:F1}y), no teleport needed");
+                    CompleteEquipmentCycle();
+                    return;
+                }
+                
+                // 优先使用瞬移功能
+                if (Helpers.FlyHelper.IsEnabled)
+                {
+                    Logging.Write("[WAQ-Private] 瞬移功能已启用，使用智能旅行返回原位置");
+                    
+                    if (Helpers.FlyHelper.SmartTravelTo(savedPos, savedMapId, _teleportManager))
+                    {
+                        Logging.Write("[WAQ-Private] ✓ 瞬移返回成功");
+                        CompleteEquipmentCycle();
+                        return;
+                    }
+                    Logging.Write("[WAQ-Private] 瞬移失败，尝试使用传统传送方式");
+                }
+                
+                // 传统传送逻辑
                 if (!_equipmentManager.HasSavedReturnLocation)
                 {
                     Logging.Write("[WAQ-Private] No saved return teleport location, will travel normally");
@@ -69,26 +102,6 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Equipment
                 Logging.Write($"[WAQ-Private] Return teleport point: {returnLocation.Name}");
                 Logging.Write($"[WAQ-Private] Target continent: {returnLocation.Continent}");
                 Logging.Write($"[WAQ-Private] Menu path: [{string.Join(" > ", returnLocation.MenuPath ?? new System.Collections.Generic.List<string>())}]");
-                
-                int currentMapId = Usefuls.ContinentId;
-                
-                // 检查是否需要传送（已经在目标大陆则跳过）
-                if (currentMapId == returnLocation.Continent)
-                {
-                    var returnPos = new Vector3(
-                        returnLocation.Position.X,
-                        returnLocation.Position.Y,
-                        returnLocation.Position.Z
-                    );
-                    float distance = ObjectManager.Me.Position.DistanceTo(returnPos);
-                    
-                    if (distance < 300)
-                    {
-                        Logging.Write($"[WAQ-Private] Already close to return location ({distance:F1}y), no teleport needed");
-                        CompleteEquipmentCycle();
-                        return;
-                    }
-                }
                 
                 // 执行传送
                 bool success = false;

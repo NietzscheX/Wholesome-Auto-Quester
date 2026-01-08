@@ -261,6 +261,19 @@
                    Click="SaveSettings" Name="EnableAutoTraining" OnLabel="" OffLabel="" 
                    ToolTip="Auto travel to trainer and learn skills (Requires equipment.yml with Training section)"/>
 
+        <!-- Fly (Instant Teleport) -->
+        <TextBlock Grid.Row="12" 
+                    Grid.Column="2" 
+                    Margin="10" 
+                    HorizontalAlignment="Right" 
+                    VerticalAlignment="Center"  
+                    Text="瞬移 (Fly) :" 
+                    FontSize="13"  />
+        <Controls:ToggleSwitch Grid.Row="12" Grid.Column="3"  Margin="10,10,10,10"
+                   HorizontalAlignment="Left"  VerticalAlignment="Center" IsChecked="{Binding Path=Fly, Mode=TwoWay}" 
+                   Click="SaveSettings" Name="Fly" OnLabel="" OffLabel="" 
+                   ToolTip="启用瞬移功能：同大陆直接瞬移到目标位置，跨大陆先传送到对应大陆再瞬移"/>
+
         <!-- Teleport Item Entry -->
         <TextBlock Grid.Row="12" 
                     Grid.Column="2" 
