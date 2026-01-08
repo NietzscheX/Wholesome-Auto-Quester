@@ -33,7 +33,7 @@ namespace Wholesome_Auto_Quester.WholesomeToolbox
             return new QuestTarget
             {
                 Location = activeTask.Location,
-                Continent = activeTask.WorldMapArea?.Continent ?? -1,
+                Continent = activeTask.WorldMapArea != null ? (int)activeTask.WorldMapArea.Continent : -1,
                 TargetName = activeTask.TaskName,
                 QuestId = 0 // WAQ 任务可能没有 QuestId
             };
