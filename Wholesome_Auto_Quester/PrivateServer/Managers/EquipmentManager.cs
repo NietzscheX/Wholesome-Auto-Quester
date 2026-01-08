@@ -170,6 +170,8 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                 var supply = supplyEntry.Value;
                 if (supply.ItemId <= 0) continue;
 
+                if (!ShouldBuySupply(supply)) continue;
+
                 int count = GetItemCountInBags(supply.ItemId);
                 if (count < supply.MinCount)
                 {
@@ -637,6 +639,8 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                     var supply = supplyEntry.Value;
                     if (supply.ItemId <= 0) continue;
 
+                    if (!ShouldBuySupply(supply)) continue;
+
                     int currentCount = GetItemCountInBags(supply.ItemId);
                     if (currentCount < supply.MinCount)
                     {
@@ -1091,6 +1095,36 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             Logging.Write($"[WAQ-Equipment] Equipped {totalEquipped} items");
             Thread.Sleep(2000);
             Logging.Write("[WAQ-Equipment] Equipment cycle complete");
+        }
+
+        private bool ShouldBuySupply(EquipmentSupply supply)
+        {
+            return Lua.LuaDoString<bool>($@"
+                local itemId = {supply.ItemId};
+                if not itemId or itemId == 0 then return false; end
+                local name, link, quality, iLevel, reqLevel, class, subClass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(itemId);
+                
+                if not subClass then return true; end -- Item info not cached, process normally
+
+                -- Detect Bag Config
+                local hasQuiver = false;
+                local hasAmmoPouch = false;
+                
+                for i=1,4 do
+                     local free, bagType = GetContainerNumFreeSlots(i);
+                     if bagType and bagType == 1 then hasQuiver = true; end
+                     if bagType and bagType == 2 then hasAmmoPouch = true; end
+                end
+                
+                -- Check constraints
+                if subClass == 'Arrow' or subClass == '箭' then
+                    if not hasQuiver then return false; end
+                elseif subClass == 'Bullet' or subClass == '子弹' then
+                    if not hasAmmoPouch then return false; end
+                end
+                
+                return true;
+            ");
         }
     }
 }

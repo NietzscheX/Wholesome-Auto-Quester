@@ -45,12 +45,12 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
             }
             
             // 计算距离，如果太远则分步瞬移
-            float distance = ObjectManager.Me.Position.DistanceTo(pos);
-            if (distance > MAX_SINGLE_TELEPORT_DISTANCE)
-            {
-                Logging.Write($"[FlyHelper] 距离 {distance:F0} 码较远，将分步瞬移");
-                return StepTeleport(pos);
-            }
+            // float distance = ObjectManager.Me.Position.DistanceTo(pos);
+            // if (distance > MAX_SINGLE_TELEPORT_DISTANCE)
+            // {
+            //     Logging.Write($"[FlyHelper] 距离 {distance:F0} 码较远，将分步瞬移");
+            //     return StepTeleport(pos);
+            // }
 
             return DoSingleTeleport(pos);
         }
