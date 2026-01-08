@@ -42,6 +42,12 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
         private float _savedPosZ;
         private int _savedMapId;
         
+        // 冷却和失败跟踪
+        private DateTime _lastRefreshTime = DateTime.MinValue;
+        private const int REFRESH_COOLDOWN_SECONDS = 300; // 5分钟冷却
+        private int _consecutiveFailures = 0;
+        private const int MAX_CONSECUTIVE_FAILURES = 3;
+        
         public bool IsActive => _currentPhase != EquipmentPhase.Idle;
         public EquipmentPhase CurrentEquipmentPhase => _currentPhase;
         public EquipmentConfig Config => _config;
@@ -124,6 +130,24 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
         public bool NeedsRefresh()
         {
             if (_config == null || _currentClassProfile == null) return false;
+            
+            // 检查冷却
+            var elapsed = (DateTime.Now - _lastRefreshTime).TotalSeconds;
+            if (elapsed < REFRESH_COOLDOWN_SECONDS)
+            {
+                return false;
+            }
+            
+            // 检查连续失败次数
+            if (_consecutiveFailures >= MAX_CONSECUTIVE_FAILURES)
+            {
+                // 超过最大失败次数，等待30分钟后重置
+                if (elapsed < 1800)
+                {
+                    return false;
+                }
+                _consecutiveFailures = 0; // 重置
+            }
             
             foreach (var slot in _currentClassProfile.Slots)
             {
@@ -229,6 +253,45 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             Logging.Write("[WAQ-Equipment] Cleared saved position and return location");
         }
         
+        /// <summary>
+        /// 标记刷新完成（更新时间戳）
+        /// </summary>
+        public void MarkRefreshComplete(bool success = true)
+        {
+            _lastRefreshTime = DateTime.Now;
+            
+            if (success)
+            {
+                // 验证装备是否真的正确
+                bool stillNeedsRefresh = false;
+                foreach (var slot in _currentClassProfile.Slots)
+                {
+                    if (slot.Value.Strategy == "Ignore") continue;
+                    if (NeedsSlotEquipment(slot.Key, slot.Value))
+                    {
+                        stillNeedsRefresh = true;
+                        Logging.Write($"[WAQ-Equipment] ⚠ Slot {slot.Key} still needs equipment after refresh");
+                    }
+                }
+                
+                if (stillNeedsRefresh)
+                {
+                    _consecutiveFailures++;
+                    Logging.Write($"[WAQ-Equipment] ⚠ Equipment refresh may have failed. Failure count: {_consecutiveFailures}/{MAX_CONSECUTIVE_FAILURES}");
+                }
+                else
+                {
+                    _consecutiveFailures = 0;
+                    Logging.Write("[WAQ-Equipment] ✓ All equipment slots verified successfully");
+                }
+            }
+            else
+            {
+                _consecutiveFailures++;
+                Logging.Write($"[WAQ-Equipment] Equipment refresh failed. Failure count: {_consecutiveFailures}/{MAX_CONSECUTIVE_FAILURES}");
+            }
+        }
+        
         public void SetPhase(EquipmentPhase phase)
         {
             _currentPhase = phase;
@@ -238,6 +301,7 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
         public void ExecuteCleanBags()
         {
             DeleteDamagedEquipment();
+            DeleteNonMatchingEquipment();  // 删除不匹配配置的装备（如出生自带的垃圾武器）
             EnsureBagSpace(10);
         }
         
@@ -292,6 +356,85 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             
             Thread.Sleep(1000);
             Logging.Write("[WAQ-Equipment] Damaged equipment deleted");
+        }
+        
+        /// <summary>
+        /// 删除不匹配配置的装备（如出生自带的垃圾武器）
+        /// </summary>
+        private void DeleteNonMatchingEquipment()
+        {
+            if (_currentClassProfile?.Slots == null) return;
+            
+            // 构建期望的装备映射: slotId -> expectedItemId
+            var expectedItems = new Dictionary<int, int>();
+            foreach (var slotEntry in _currentClassProfile.Slots)
+            {
+                int slotId = GetSlotId(slotEntry.Key);
+                if (slotId > 0 && slotEntry.Value.ItemId > 0)
+                {
+                    expectedItems[slotId] = slotEntry.Value.ItemId;
+                }
+            }
+            
+            if (expectedItems.Count == 0) return;
+            
+            string protectedItemsLua = "{}";
+            if (_config.GlobalSettings?.ProtectedItems != null && _config.GlobalSettings.ProtectedItems.Count > 0)
+            {
+                protectedItemsLua = "{" + string.Join(",", _config.GlobalSettings.ProtectedItems) + "}";
+            }
+            
+            // 构建期望装备的 Lua 表
+            string expectedItemsLua = "{";
+            foreach (var kvp in expectedItems)
+            {
+                expectedItemsLua += $"[{kvp.Key}]={kvp.Value},";
+            }
+            expectedItemsLua += "}";
+            
+            Logging.Write("[WAQ-Equipment] Checking for non-matching equipped items...");
+            
+            int deleted = Lua.LuaDoString<int>($@"
+                local expectedItems = {expectedItemsLua};
+                local protectedItems = {protectedItemsLua};
+                
+                local protected = {{}};
+                for _, id in ipairs(protectedItems) do
+                    protected[id] = true;
+                end
+                
+                local deletedCount = 0;
+                
+                -- 遍历装备槽
+                for slotId, expectedId in pairs(expectedItems) do
+                    local itemLink = GetInventoryItemLink('player', slotId);
+                    if itemLink then
+                        local currentId = tonumber(itemLink:match('item:(%d+)'));
+                        if currentId then
+                            DEFAULT_CHAT_FRAME:AddMessage('[WAQ-Equipment] Slot ' .. slotId .. ': current=' .. currentId .. ', expected=' .. expectedId);
+                            if currentId ~= expectedId and not protected[currentId] then
+                                local itemName = GetItemInfo(itemLink);
+                                DEFAULT_CHAT_FRAME:AddMessage('[WAQ-Equipment] DELETING from slot ' .. slotId .. ': ' .. (itemName or currentId));
+                                PickupInventoryItem(slotId);
+                                DeleteCursorItem();
+                                deletedCount = deletedCount + 1;
+                            end
+                        end
+                    end
+                end
+                
+                return deletedCount;
+            ");
+            
+            if (deleted > 0)
+            {
+                Thread.Sleep(1000);
+                Logging.Write($"[WAQ-Equipment] Removed {deleted} non-matching equipped items");
+            }
+            else
+            {
+                Logging.Write("[WAQ-Equipment] No non-matching items to remove");
+            }
         }
         
         private void GoToNpcSource(string sourceKey)
@@ -854,9 +997,16 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                     INVTYPE_HOLDABLE = 17, INVTYPE_SHIELD = 17, INVTYPE_THROWN = 18, INVTYPE_RANGEDRIGHT = 18
                 }};
 
+                -- 创建物品ID到槽位的映射
                 local itemToSlotMap = {{}};
                 for slotId, itemId in pairs(slotItemMap) do
                     itemToSlotMap[itemId] = slotId;
+                end
+                
+                -- 创建期望物品ID集合（用于检查是否是配置中的物品）
+                local expectedItemIds = {{}};
+                for slotId, itemId in pairs(slotItemMap) do
+                    expectedItemIds[itemId] = true;
                 end
 
                 local nextFingerSlot = 11;
@@ -872,18 +1022,22 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                             if iLoc and iLoc ~= '' and iLoc ~= 'INVTYPE_BAG' then
                                 local targetSlot = nil;
                                 
+                                -- 只装备配置中明确指定的物品
                                 if itemId and itemToSlotMap[itemId] then
+                                    -- 物品在配置中有明确的槽位映射
                                     targetSlot = itemToSlotMap[itemId];
-                                elseif iLoc == 'INVTYPE_WEAPON' then
-                                    -- Skip weapons without strict mapping
-                                elseif iLoc == 'INVTYPE_FINGER' then
-                                    targetSlot = nextFingerSlot;
-                                    if nextFingerSlot < 12 then nextFingerSlot = 12 end
-                                elseif iLoc == 'INVTYPE_TRINKET' then
-                                    targetSlot = nextTrinketSlot;
-                                    if nextTrinketSlot < 14 then nextTrinketSlot = 14 end
+                                elseif itemId and expectedItemIds[itemId] then
+                                    -- 物品在配置中但可能用于戒指/饰品槽
+                                    if iLoc == 'INVTYPE_FINGER' then
+                                        targetSlot = nextFingerSlot;
+                                        if nextFingerSlot < 12 then nextFingerSlot = 12 end
+                                    elseif iLoc == 'INVTYPE_TRINKET' then
+                                        targetSlot = nextTrinketSlot;
+                                        if nextTrinketSlot < 14 then nextTrinketSlot = 14 end
+                                    end
                                 else
-                                    targetSlot = locToSlot[iLoc];
+                                    -- 物品不在配置中，跳过（不装备随机掉落的装备）
+                                    -- DEFAULT_CHAT_FRAME:AddMessage('[WAQ-Equipment] Skipping non-configured item: ' .. (name or itemId));
                                 end
 
                                 if targetSlot and not processedSlots[targetSlot] then
@@ -893,9 +1047,14 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                                         currentId = tonumber(currentLink:match('item:(%d+)'));
                                     end
                                     
+                                    -- 检查目标槽位是否已经有正确的物品
+                                    local expectedIdForSlot = slotItemMap[targetSlot];
+                                    
                                     if currentId == itemId then
+                                        -- 已经装备了正确的物品
                                         processedSlots[targetSlot] = true;
-                                    else
+                                    elseif expectedIdForSlot and itemId == expectedIdForSlot then
+                                        -- 只有当背包里的物品是配置期望的物品时才装备
                                         DEFAULT_CHAT_FRAME:AddMessage('[WAQ-Equipment] Equipping ' .. (name or 'item') .. ' to slot ' .. targetSlot);
                                         PickupContainerItem(bag, slot);
                                         EquipCursorItem(targetSlot);

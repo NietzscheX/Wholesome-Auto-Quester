@@ -209,6 +209,7 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Equipment
         private void CompleteEquipmentCycle()
         {
             _equipmentManager.ClearSavedPosition();
+            _equipmentManager.MarkRefreshComplete(true);  // 验证并更新冷却时间
             _equipmentManager.SetPhase(EquipmentManager.EquipmentPhase.Idle);
             Logging.Write("[WAQ-Private] ========================================");
             Logging.Write("[WAQ-Private] Equipment refresh cycle complete!");
