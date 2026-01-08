@@ -40,6 +40,13 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Training
         public override void Run()
         {
             Logging.Write("[WAQ-Private] Teleporting back to saved position");
+
+            if (_trainingManager.SavedPosX == 0 && _trainingManager.SavedPosY == 0)
+            {
+                Logging.WriteError("[WAQ-Private] Invalid saved position (0,0,0)! Cannot teleport back.");
+                _trainingManager.SetPhase(Managers.TrainingManager.TrainingPhase.ResumingProduct);
+                return;
+            }
             
             if (Helpers.TeleportHelper.TeleportTo(
                 _trainingManager.SavedPosX,
@@ -48,6 +55,11 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Training
                 _trainingManager.SavedMapId,
                 _config))
             {
+                _trainingManager.SetPhase(Managers.TrainingManager.TrainingPhase.ResumingProduct);
+            }
+            else
+            {
+                Logging.WriteError("[WAQ-Private] Teleport back failed, resuming product anyway");
                 _trainingManager.SetPhase(Managers.TrainingManager.TrainingPhase.ResumingProduct);
             }
         }

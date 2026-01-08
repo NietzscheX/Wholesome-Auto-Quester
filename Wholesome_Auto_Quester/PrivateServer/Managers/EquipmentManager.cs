@@ -209,10 +209,36 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
         public void SaveCurrentPosition(TeleportManager teleportManager = null)
         {
             var pos = ObjectManager.Me.Position;
+            
+            // 如果坐标是 (0,0,0)，尝试重试
+            if (pos.X == 0 && pos.Y == 0 && pos.Z == 0)
+            {
+                Logging.Write("[WAQ-Equipment] ⚠ Warning: Player position is (0,0,0), retrying...");
+                for (int i = 0; i < 10; i++)
+                {
+                    Thread.Sleep(200);
+                    pos = ObjectManager.Me.Position;
+                    if (pos.X != 0 || pos.Y != 0 || pos.Z != 0) break;
+                }
+            }
+
+            // 如果仍然是 (0,0,0)，尝试使用 Usefuls.PlayerPosition
+            if (pos.X == 0 && pos.Y == 0 && pos.Z == 0)
+            {
+                pos = Usefuls.PlayerPosition;
+            }
+
             _savedPosX = pos.X;
             _savedPosY = pos.Y;
             _savedPosZ = pos.Z;
             _savedMapId = Usefuls.ContinentId;
+
+            // 再次验证，如果还是 (0,0,0)，记录错误且不执行后续
+            if (_savedPosX == 0 && _savedPosY == 0)
+            {
+                Logging.WriteError("[WAQ-Equipment] ✗ Critical: Failed to get player position! Teleport back will be disabled.");
+                return;
+            }
             
             Logging.Write($"[WAQ-Equipment] Saved original position: ({_savedPosX:F1}, {_savedPosY:F1}, {_savedPosZ:F1}) MapId: {_savedMapId}");
             

@@ -63,6 +63,14 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Equipment
                     _equipmentManager.SavedPosZ
                 );
                 int savedMapId = _equipmentManager.SavedMapId;
+
+                // 检查保存的位置是否有效
+                if (savedPos.X == 0 && savedPos.Y == 0)
+                {
+                    Logging.WriteError("[WAQ-Private] ✗ Invalid saved position (0,0,0)! Teleport back cancelled.");
+                    CompleteEquipmentCycle();
+                    return;
+                }
                 
                 int currentMapId = Usefuls.ContinentId;
                 float distance = ObjectManager.Me.Position.DistanceTo(savedPos);

@@ -60,10 +60,35 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             }
             
             // 记录当前位置
-            _savedPosX = ObjectManager.Me.Position.X;
-            _savedPosY = ObjectManager.Me.Position.Y;
-            _savedPosZ = ObjectManager.Me.Position.Z;
+            var pos = ObjectManager.Me.Position;
+            
+            // 如果坐标是 (0,0,0)，尝试重试
+            if (pos.X == 0 && pos.Y == 0 && pos.Z == 0)
+            {
+                Logging.Write("[WAQ-Private] ⚠ Warning: Player position is (0,0,0), retrying...");
+                for (int i = 0; i < 10; i++)
+                {
+                    Thread.Sleep(200);
+                    pos = ObjectManager.Me.Position;
+                    if (pos.X != 0 || pos.Y != 0 || pos.Z != 0) break;
+                }
+            }
+
+            // 如果仍然是 (0,0,0)，尝试使用 Usefuls.PlayerPosition
+            if (pos.X == 0 && pos.Y == 0 && pos.Z == 0)
+            {
+                pos = Usefuls.PlayerPosition;
+            }
+
+            _savedPosX = pos.X;
+            _savedPosY = pos.Y;
+            _savedPosZ = pos.Z;
             _savedMapId = Usefuls.ContinentId;
+
+            if (_savedPosX == 0 && _savedPosY == 0)
+            {
+                Logging.WriteError("[WAQ-Private] ✗ Critical: Failed to get player position! Teleport back will be disabled.");
+            }
             
             Logging.Write($"[WAQ-Private] Saved position: ({_savedPosX:F1}, {_savedPosY:F1}, {_savedPosZ:F1}) on map {_savedMapId}");
             

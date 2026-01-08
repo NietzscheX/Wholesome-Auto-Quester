@@ -16,6 +16,11 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
         
         public static bool TeleportTo(float x, float y, float z, int mapId, TrainingConfig config)
         {
+            if (x == 0 && y == 0)
+            {
+                Logging.WriteError("[WAQ-Private] TeleportTo received (0,0,0) coordinates, aborting teleport.");
+                return false;
+            }
             if (config.UseCustomTeleport && config.TeleportItemEntry > 0)
             {
                 // 使用自定义传送宝石
