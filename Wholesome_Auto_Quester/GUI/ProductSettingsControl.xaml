@@ -48,6 +48,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -275,14 +276,14 @@
                    ToolTip="启用瞬移功能：同大陆直接瞬移到目标位置，跨大陆先传送到对应大陆再瞬移"/>
 
         <!-- Teleport Item Entry -->
-        <TextBlock Grid.Row="12" 
+        <TextBlock Grid.Row="13" 
                     Grid.Column="2" 
                     Margin="10" 
                     HorizontalAlignment="Right" 
                     VerticalAlignment="Center"  
                     Text="Teleport Item ID :" 
                     FontSize="13"  />
-        <mah:NumericUpDown  Grid.Row="12" 
+        <mah:NumericUpDown  Grid.Row="13" 
                     Minimum="0"
                     Grid.Column="3" 
                     MinWidth="110"
@@ -295,14 +296,14 @@
                    ToolTip="Teleport item Entry ID (6948 = Hearthstone)" />
 
         <!-- Min Teleport Distance -->
-        <TextBlock Grid.Row="13" 
+        <TextBlock Grid.Row="14" 
                     Grid.Column="0" 
                     Margin="10" 
                     HorizontalAlignment="Right" 
                     VerticalAlignment="Center"  
                     Text="Min Teleport Distance :" 
                     FontSize="13"  />
-        <mah:NumericUpDown  Grid.Row="13" 
+        <mah:NumericUpDown  Grid.Row="14" 
                     Minimum="100"
                     Maximum="5000"
                     Grid.Column="1" 
