@@ -21,7 +21,7 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
         {
             if (!WholesomeAQSettings.CurrentSetting.Fly)
             {
-                Logger.LogError("[FlyHelper] 瞬移开关未打开");
+                Logging.WriteError("[FlyHelper] 瞬移开关未打开");
                 return false;
             }
 

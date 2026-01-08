@@ -9,7 +9,7 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
 {
     /// <summary>
     /// 全局智能传送状态 - 周期性监控移动距离
-    /// 策略：监控玩家移动距离，超过阈值时提供传送选项
+    /// 策略：如果启用瞬移，直接瞬移到目标；否则使用传送点
     /// </summary>
     public class SmartTravelState : State
     {
@@ -17,9 +17,9 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
         private Vector3 _lastCheckPosition = Vector3.Empty;
         private DateTime _lastCheckTime = DateTime.MinValue;
         private DateTime _lastTeleportAttempt = DateTime.MinValue;
-        private const int CHECK_INTERVAL_SECONDS = 5;
-        private const int TELEPORT_COOLDOWN_SECONDS = 30;
-        private const float MOVEMENT_THRESHOLD = 50f;
+        private const int CHECK_INTERVAL_SECONDS = 3;
+        private const int TELEPORT_COOLDOWN_SECONDS = 10;
+        private const float MIN_DISTANCE_FOR_FLY = 200f; // 瞬移最小距离
         
         public SmartTravelState(TeleportManager teleportManager)
         {
@@ -34,8 +34,8 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
         {
             get
             {
-                if (_teleportManager == null ||
-                    Fight.InFight ||
+                // 基本状态检查
+                if (Fight.InFight ||
                     ObjectManager.Me.IsOnTaxi ||
                     ObjectManager.Me.IsDead ||
                     ObjectManager.Me.IsCast ||
@@ -45,13 +45,14 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
                     return false;
                 }
                 
-                // 检查任务位置提供者是否可用
-                if (!WholesomeToolbox.QuestLocationBridge.IsProviderAvailable())
+                // 检查是否启用了瞬移功能
+                if (!Helpers.FlyHelper.IsEnabled)
                 {
-                    return false;
+                    // 如果没启用瞬移，使用原来的传送点逻辑
+                    return CheckForTeleportTravel();
                 }
                 
-                // 传送冷却检查
+                // 冷却检查
                 if ((DateTime.Now - _lastTeleportAttempt).TotalSeconds < TELEPORT_COOLDOWN_SECONDS)
                 {
                     return false;
@@ -65,34 +66,86 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
                 
                 _lastCheckTime = DateTime.Now;
                 
-                // 检查是否有活动任务
+                // 检查任务位置提供者
+                if (!WholesomeToolbox.QuestLocationBridge.IsProviderAvailable())
+                {
+                    return false;
+                }
+                
                 var provider = WholesomeToolbox.QuestLocationBridge.GetProvider();
                 if (!provider.HasActiveQuestTarget())
                 {
                     return false;
                 }
                 
-                // 检查是否在移动
-                Vector3 currentPos = ObjectManager.Me.Position;
-                
-                if (_lastCheckPosition == Vector3.Empty)
-                {
-                    _lastCheckPosition = currentPos;
-                    return false;
-                }
-                
-                float movedDistance = _lastCheckPosition.DistanceTo(currentPos);
-                _lastCheckPosition = currentPos;
-                
-                // 如果移动距离很小,说明没在赶路
-                if (movedDistance < MOVEMENT_THRESHOLD)
+                var questTarget = provider.GetCurrentQuestTarget();
+                if (questTarget == null || !questTarget.IsValid)
                 {
                     return false;
                 }
                 
-                Logging.Write($"[WAQ-SmartTravel] 检测到玩家正在移动 ({movedDistance:F1} 码/5秒), 检查是否需要传送");
-                return true;
+                // 检查距离是否足够远，需要瞬移
+                float distance = ObjectManager.Me.Position.DistanceTo(questTarget.Location);
+                if (distance >= MIN_DISTANCE_FOR_FLY)
+                {
+                    Logging.Write($"[WAQ-SmartTravel] 检测到目标距离 {distance:F0} 码，准备瞬移");
+                    return true;
+                }
+                
+                return false;
             }
+        }
+        
+        /// <summary>
+        /// 原来的传送点检查逻辑（当 Fly 未启用时使用）
+        /// </summary>
+        private bool CheckForTeleportTravel()
+        {
+            if (_teleportManager == null)
+                return false;
+                
+            // 传送冷却检查
+            if ((DateTime.Now - _lastTeleportAttempt).TotalSeconds < 30)
+            {
+                return false;
+            }
+            
+            // 检查间隔
+            if ((DateTime.Now - _lastCheckTime).TotalSeconds < 5)
+            {
+                return false;
+            }
+            
+            _lastCheckTime = DateTime.Now;
+            
+            // 检查任务位置提供者
+            if (!WholesomeToolbox.QuestLocationBridge.IsProviderAvailable())
+                return false;
+                
+            var provider = WholesomeToolbox.QuestLocationBridge.GetProvider();
+            if (!provider.HasActiveQuestTarget())
+                return false;
+            
+            // 检查是否在移动
+            Vector3 currentPos = ObjectManager.Me.Position;
+            
+            if (_lastCheckPosition == Vector3.Empty)
+            {
+                _lastCheckPosition = currentPos;
+                return false;
+            }
+            
+            float movedDistance = _lastCheckPosition.DistanceTo(currentPos);
+            _lastCheckPosition = currentPos;
+            
+            // 如果移动距离很小,说明没在赶路
+            if (movedDistance < 50f)
+            {
+                return false;
+            }
+            
+            Logging.Write($"[WAQ-SmartTravel] 检测到玩家正在移动 ({movedDistance:F1} 码/5秒), 检查是否需要传送");
+            return true;
         }
         
         public override void Run()
@@ -120,10 +173,38 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
                 
                 Vector3 currentPos = ObjectManager.Me.Position;
                 int currentContinent = Usefuls.ContinentId;
-                string faction = TeleportManager.GetPlayerFaction();
                 
                 Logging.Write($"[WAQ-SmartTravel] 当前任务目标: {questTarget.TargetName}");
                 Logging.Write($"[WAQ-SmartTravel] 目标位置: {questTarget.Location}, 大陆: {questTarget.Continent}");
+                
+                // 优先使用瞬移功能
+                if (Helpers.FlyHelper.IsEnabled)
+                {
+                    Logging.Write("[WAQ-SmartTravel] ========================================");
+                    Logging.Write("[WAQ-SmartTravel] 使用瞬移前往任务目标");
+                    Logging.Write("[WAQ-SmartTravel] ========================================");
+                    
+                    bool success = Helpers.FlyHelper.SmartTravelTo(
+                        questTarget.Location, 
+                        questTarget.Continent, 
+                        _teleportManager
+                    );
+                    
+                    if (success)
+                    {
+                        Logging.Write($"[WAQ-SmartTravel] ✓ 瞬移成功! 已到达 {questTarget.TargetName} 附近");
+                    }
+                    else
+                    {
+                        Logging.WriteError("[WAQ-SmartTravel] ✗ 瞬移失败");
+                    }
+                    
+                    _lastTeleportAttempt = DateTime.Now;
+                    return;
+                }
+                
+                // 传统传送点逻辑
+                string faction = TeleportManager.GetPlayerFaction();
                 
                 // 判断是否应该传送
                 if (!_teleportManager.ShouldUseTeleport(currentPos, questTarget.Location, 
@@ -148,9 +229,9 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
                 Logging.Write($"[WAQ-SmartTravel] 准备传送以加速前往: {questTarget.TargetName}");
                 Logging.Write($"[WAQ-SmartTravel] ========================================");
                 
-                bool success = _teleportManager.ExecuteTeleport(bestLocation);
+                bool teleportSuccess = _teleportManager.ExecuteTeleport(bestLocation);
                 
-                if (success)
+                if (teleportSuccess)
                 {
                     Logging.Write($"[WAQ-SmartTravel] ✓ 传送成功! 已到达 {bestLocation.Name}");
                 }
