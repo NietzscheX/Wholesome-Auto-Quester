@@ -62,7 +62,7 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
         {
             Vector3 currentPos = ObjectManager.Me.Position;
             float totalDistance = currentPos.DistanceTo(finalPos);
-            int steps = (int)Math.Ceiling(totalDistance / MAX_SINGLE_TELEPORT_DISTANCE);
+            int steps = (int)System.Math.Ceiling(totalDistance / MAX_SINGLE_TELEPORT_DISTANCE);
             
             Logging.Write($"[FlyHelper] 分 {steps} 步瞬移");
             
