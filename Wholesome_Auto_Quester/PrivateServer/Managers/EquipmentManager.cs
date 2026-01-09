@@ -996,7 +996,30 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             Logging.Write($"[WAQ-Equipment] Used {usedItems} bundles");
             if (usedItems > 0)
             {
-                Thread.Sleep(5000);
+                // 等待礼包打开的拾取窗口
+                Lua.LuaDoString(@"
+                    -- 等待并自动确认拾取窗口
+                    for i = 1, 20 do
+                        if LootFrame and LootFrame:IsVisible() then
+                            for slot = 1, GetNumLootItems() do
+                                LootSlot(slot)
+                            end
+                            CloseLoot()
+                            break
+                        end
+                    end
+                ");
+                Thread.Sleep(3000);
+                
+                // 再次检查背包中的物品
+                int bagItemCount = Lua.LuaDoString<int>(@"
+                    local count = 0
+                    for bag = 0, 4 do
+                        count = count + GetContainerNumSlots(bag)
+                    end
+                    return count
+                ");
+                Logging.Write($"[WAQ-Equipment] Total bag slots after bundle: {bagItemCount}");
             }
             
             // 步骤2: 装备物品
