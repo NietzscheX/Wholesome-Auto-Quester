@@ -310,7 +310,7 @@
     </Reference>
     <Reference Include="YamlDotNet">
       <HintPath>..\Dependencies\YamlDotNet.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
