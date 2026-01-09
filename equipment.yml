@@ -69,7 +69,7 @@ Training:
   # 双天赋配置 (Dual Talent Specialization)
   # ============================================================
   # 在达到指定等级后自动购买双天赋
-  EnableDualTalent: true               # 是否启用双天赋购买
+  EnableDualTalent: false               # 是否启用双天赋购买
   DualTalentGossipOption: "学双天赋"    # 双天赋对话选项
   DualTalentMinLevel: 40               # 购买双天赋的最低等级
   # 如果双天赋NPC是不同的，取消以下注释并填写:
