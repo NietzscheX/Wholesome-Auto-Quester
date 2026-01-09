@@ -55,13 +55,13 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Training
             }
             
             // 3. 学习骑术（如果启用且达到等级）
-            if (_config.EnableRidingTraining && playerLevel >= 40)
+            if (_config.EnableRidingTraining )
             {
                 LearnSkillsOfType(TrainingType.RidingSkills, _config.RidingTrainerGossipOption);
             }
             
             // 4. 购买双天赋（如果启用且达到等级）
-            if (_config.EnableDualTalent && playerLevel >= _config.DualTalentMinLevel)
+            if (_config.EnableDualTalent )
             {
                 TryBuyDualTalent();
             }
@@ -132,40 +132,47 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Training
         /// </summary>
         private void LearnAllAvailableServices()
         {
-            // BuyTrainerService(0) 会学习所有可学技能
-            // 但有些服务器可能需要逐个学习
             try
             {
-                // 获取可用服务数量
-                int numServices = Lua.LuaDoString<int>(@"
-                    local count = 0
-                    if GetNumTrainerServices then
-                        count = GetNumTrainerServices() or 0
+                // 使用 Lua 一次性学习所有可用技能
+                // 这样更高效，避免逐个检查
+                int learnedCount = Lua.LuaDoString<int>(@"
+                    local learned = 0
+                    local availableFound = true
+                    local maxIterations = 50  -- 防止无限循环
+                    local iteration = 0
+                    
+                    while availableFound and iteration < maxIterations do
+                        availableFound = false
+                        iteration = iteration + 1
+                        
+                        local numServices = GetNumTrainerServices() or 0
+                        
+                        for i = 1, numServices do
+                            local _, _, serviceType = GetTrainerServiceInfo(i)
+                            if serviceType == 'available' then
+                                BuyTrainerService(i)
+                                learned = learned + 1
+                                availableFound = true
+                                -- 学习一个后列表可能变化，需要重新扫描
+                                break
+                            end
+                        end
                     end
-                    return count
+                    
+                    return learned
                 ");
                 
-                if (numServices > 0)
+                if (learnedCount > 0)
                 {
-                    Logging.Write($"[WAQ-Private] Found {numServices} trainer services");
-                    
-                    // 尝试学习所有可用服务
-                    for (int i = 1; i <= numServices; i++)
-                    {
-                        // 检查该服务是否可学习
-                        string serviceType = Lua.LuaDoString<string>($"return select(3, GetTrainerServiceInfo({i})) or 'unavailable'");
-                        if (serviceType == "available")
-                        {
-                            Lua.LuaDoString($"BuyTrainerService({i})");
-                            Thread.Sleep(300 + Usefuls.Latency);
-                        }
-                    }
+                    Logging.Write($"[WAQ-Private] ✓ Learned {learnedCount} skills");
                 }
                 else
                 {
-                    // 降级：使用 BuyTrainerService(0) 一次性学习
-                    Lua.LuaDoString("BuyTrainerService(0)");
+                    Logging.Write("[WAQ-Private] No available skills to learn");
                 }
+                
+                Thread.Sleep(500 + Usefuls.Latency);
             }
             catch (Exception ex)
             {

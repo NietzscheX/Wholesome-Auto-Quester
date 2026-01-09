@@ -36,22 +36,9 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Training
                     
                 int level = (int)ObjectManager.Me.Level;
                 
-                if (_trainingManager.HasTrainedAtLevel(level))
-                    return false;
-                
-                // 优先检查 TrainAtLevels 列表
-                if (_config.TrainAtLevels != null && _config.TrainAtLevels.Count > 0)
-                {
-                    return _config.TrainAtLevels.Contains(level);
-                }
-                
-                // 如果 TrainAtLevels 为空，则使用 TrainOnEvenLevels 模式
-                if (_config.TrainOnEvenLevels)
-                {
-                    return level % 2 == 0;
-                }
-                    
-                return false;
+                // 使用 TrainingManager 的综合检查方法
+                // 这会检查职业技能、武器训练、骑术、双天赋等所有类型
+                return _trainingManager.NeedsAnyTraining(level);
             }
         }
         
