@@ -35,6 +35,53 @@ Training:
   TeleportMenuPath: ["出生地区", "人类"]  # 传送物品的菜单路径 (如果传送物品有选择菜单)
   
   # ============================================================
+  # 武器训练配置 (Weapon Training)
+  # ============================================================
+  # 每次学习职业技能时，会自动尝试学习所有可用武器技能
+  EnableWeaponTraining: true           # 是否启用武器训练
+  WeaponTrainerGossipOption: "武器训练"  # 武器训练对话选项
+  # 如果武器训练师是不同的NPC，取消以下注释并填写:
+  # WeaponTrainerNpcEntry: 80001
+  # WeaponTrainerMapId: 0
+  # WeaponTrainerPosition:
+  #   X: -8934.85
+  #   Y: -146.407
+  #   Z: 82.85
+  #   Type: "None"
+  
+  # ============================================================
+  # 骑术训练配置 (Riding Skills)
+  # ============================================================
+  # 在达到指定等级时自动学习骑术
+  EnableRidingTraining: true           # 是否启用骑术训练
+  RidingTrainerGossipOption: "骑术技能"  # 骑术训练对话选项
+  RidingTrainAtLevels: [40, 60]        # 在哪些等级学习骑术 (40级初级/60级高级)
+  # 如果骑术训练师是不同的NPC，取消以下注释并填写:
+  # RidingTrainerNpcEntry: 80001
+  # RidingTrainerMapId: 0
+  # RidingTrainerPosition:
+  #   X: -8934.85
+  #   Y: -146.407
+  #   Z: 82.85
+  #   Type: "None"
+  
+  # ============================================================
+  # 双天赋配置 (Dual Talent Specialization)
+  # ============================================================
+  # 在达到指定等级后自动购买双天赋
+  EnableDualTalent: true               # 是否启用双天赋购买
+  DualTalentGossipOption: "学双天赋"    # 双天赋对话选项
+  DualTalentMinLevel: 40               # 购买双天赋的最低等级
+  # 如果双天赋NPC是不同的，取消以下注释并填写:
+  # DualTalentNpcEntry: 80001
+  # DualTalentMapId: 0
+  # DualTalentPosition:
+  #   X: -8934.85
+  #   Y: -146.407
+  #   Z: 82.85
+  #   Type: "None"
+  
+  # ============================================================
   # 智能传送系统 (Smart Teleport System) - 新功能!
   # ============================================================
   # 现在支持智能快捷传送功能！插件会自动判断距离:
@@ -221,7 +268,129 @@ Classes:
         MenuPath: ["新手散件"]
         AllowEmpty: true
         # AllowEmpty: false  # 默认为false，槽位不能为空
-        
+  - Name: "Paladin"
+    ClassId: 2
+    InitialSetup:
+      PriorityBundleId: 75024
+      AutoEquipOnEmpty: true
+
+    Slots:
+      Head: #头
+        ItemId: 16866
+        Strategy: "Replace"
+        BundleId: 75024
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Chest: #胸
+        ItemId: 16865
+        Strategy: "Replace"
+        BundleId: 75024
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Shoulder: #肩膀
+        ItemId: 16868
+        Strategy: "Replace"
+        BundleId: 75024
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Waist: #腰带
+        ItemId: 16864
+        Strategy: "Replace"
+        BundleId: 75024
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Legs: #腿
+        ItemId: 16867
+        Strategy: "Replace"
+        BundleId: 75024
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Feet: #靴子
+        ItemId: 16862
+        Strategy: "Replace"
+        BundleId: 75024
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Wrist: #护腕
+        ItemId: 16861
+        Strategy: "Replace"
+        BundleId: 75024
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      Hands: #手套
+        ItemId: 16863
+        Strategy: "Replace"
+        BundleId: 75024
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手套装"]
+        AllowEmpty: false
+      MainHand: #主手
+        ItemId: 19867
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手武器"]
+        AllowEmpty: false
+      OffHand: #副手
+        ItemId: 17106
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手武器"]
+        AllowEmpty: false
+      Ranged: #远程
+        ItemId: 22402
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手武器"]
+        AllowEmpty: false
+      Neck:
+        ItemId: 21700 # 其拉守护者坠饰
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手散件"]
+      Back:
+        ItemId: 21710 # 堕落神明披风
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手散件"]
+      Finger1:
+        ItemId: 21677 # 其拉之怒
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手散件"]
+      Finger2:
+        ItemId: 21681 # 吞噬者之戒
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手散件"]
+      Trinket1:
+        ItemId: 21670 # 虫群卫士徽章
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手散件"]
+      Trinket2:
+        ItemId: 21670 # 虫群卫士徽章
+        Strategy: "Replace"
+        BundleId: null
+        SourceKey: "StarterNPC"
+        MenuPath: ["新手散件"]
+        AllowEmpty: true
+        # AllowEmpty: false  # 默认为false，槽位不能为空
+
       # ===== 可选配置示例 =====
       # 如果想让某个槽位允许为空（不强制装备），设置 AllowEmpty: true
       # 示例1：允许Shirt槽位为空

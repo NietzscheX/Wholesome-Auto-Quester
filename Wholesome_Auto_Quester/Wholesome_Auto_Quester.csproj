@@ -422,6 +422,7 @@
     <Compile Include="PrivateServer\Models\NpcSource.cs" />
     <Compile Include="PrivateServer\Models\TeleportLocation.cs" />
     <Compile Include="PrivateServer\Models\TrainingConfig.cs" />
+    <Compile Include="PrivateServer\Models\TrainingType.cs" />
     <Compile Include="PrivateServer\Models\Vector3Position.cs" />
     <Compile Include="PrivateServer\Helpers\NpcInteractionHelper.cs" />
     <Compile Include="PrivateServer\Helpers\ShopHelper.cs" />
