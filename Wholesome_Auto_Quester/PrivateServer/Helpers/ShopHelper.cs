@@ -125,44 +125,70 @@ namespace Wholesome_Auto_Quester.PrivateServer.Helpers
         }
         
         /// <summary>
-        /// 通过物品ID购买
+        /// 通过物品ID购买(支持翻页搜索)
         /// </summary>
         private static void BuyItemById(int itemId, int quantity = 1)
         {
             string luaScript = $@"
                 local targetId = {itemId};
                 local found = false;
+                local currentPage = 1;
+                local maxPages = 10; -- 最多翻10页
                 
-                local numItems = GetMerchantNumItems() or 0;
-                print('[WAQ-Private] Merchant items: ' .. numItems);
+                -- 获取总页数
+                local numPages = GetMerchantNumPages and GetMerchantNumPages() or 1;
+                if numPages > maxPages then numPages = maxPages; end
                 
-                for i = 1, numItems do
-                    local link = GetMerchantItemLink(i);
-                    if link then
-                        local id = tonumber(link:match('item:(%d+)'));
-                        if id == targetId then
-                            DEFAULT_CHAT_FRAME:AddMessage('|cff00ff00[WAQ-Private] Purchasing:|r ' .. (name or targetId));
-                            print('[WAQ-Private] Purchasing ID ' .. targetId .. ' at index ' .. i);
-                            BuyMerchantItem(i, {quantity});
-                            found = true;
-                            break;
+                print('[WAQ-Private] Searching for item ' .. targetId .. ' across ' .. numPages .. ' pages');
+                
+                -- 遍历所有页面
+                for page = 1, numPages do
+                    if found then break; end
+                    
+                    -- 切换到指定页面(如果有多页)
+                    if GetMerchantNumPages and page > 1 then
+                        -- 某些服务器可能没有翻页API,跳过
+                        if MerchantNextPageButton then
+                            for p = 2, page do
+                                MerchantNextPageButton:Click();
+                                -- 等待页面加载
+                                local waited = 0;
+                                while waited < 20 do
+                                    if GetMerchantNumItems() > 0 then break; end
+                                    waited = waited + 1;
+                                end
+                            end
+                        end
+                    end
+                    
+                    local numItems = GetMerchantNumItems() or 0;
+                    print('[WAQ-Private] Page ' .. page .. ': ' .. numItems .. ' items');
+                    
+                    -- 搜索当前页
+                    for i = 1, numItems do
+                        local link = GetMerchantItemLink(i);
+                        if link then
+                            local id = tonumber(link:match('item:(%d+)'));
+                            if id == targetId then
+                                local name = GetItemInfo(link) or tostring(targetId);
+                                DEFAULT_CHAT_FRAME:AddMessage('|cff00ff00[WAQ-Private] Found on page ' .. page .. '! Purchasing: ' .. name .. '|r');
+                                print('[WAQ-Private] Purchasing ID ' .. targetId .. ' at page ' .. page .. ', index ' .. i);
+                                BuyMerchantItem(i, {quantity});
+                                found = true;
+                                break;
+                            end
                         end
                     end
                 end
                 
                 if not found then
-                    DEFAULT_CHAT_FRAME:AddMessage('|cffff0000[WAQ-Private] Item ' .. targetId .. ' not found!|r');
-                    print('[WAQ-Private] FAILED to find item ID: ' .. targetId);
-                    
-                    -- List first 5 items to help debug
-                    for i = 1, math.min(10, numItems) do
-                        local link = GetMerchantItemLink(i);
-                        if link then print('[WAQ-Private]   Merchant item ' .. i .. ': ' .. link) end
-                    end
+                    DEFAULT_CHAT_FRAME:AddMessage('|cffff0000[WAQ-Private] Item ' .. targetId .. ' not found in any page!|r');
+                    print('[WAQ-Private] FAILED to find item ID: ' .. targetId .. ' after searching ' .. numPages .. ' pages');
                 end
             ";
             
             Lua.LuaDoString(luaScript);
+            Thread.Sleep(500); // 等待购买完成
         }
         
         /// <summary>
