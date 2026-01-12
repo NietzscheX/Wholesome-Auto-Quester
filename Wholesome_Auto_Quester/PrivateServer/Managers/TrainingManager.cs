@@ -26,6 +26,10 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
         private TrainingConfig _config;
         private HashSet<int> _trainedLevels = new HashSet<int>();
         
+        // 训练冷却时间(防止重连后反复触发)
+        private System.DateTime _lastTrainingTime = System.DateTime.MinValue;
+        private const int TRAINING_COOLDOWN_MINUTES = 30; // 30分钟内不重复训练
+        
         // === 新增：多类型训练支持 ===
         private Queue<TrainingType> _pendingTrainings = new Queue<TrainingType>();
         private TrainingType _currentTrainingType = TrainingType.ClassSkills;
@@ -79,6 +83,13 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
         /// </summary>
         public bool NeedsClassTraining(int playerLevel)
         {
+            // 检查训练冷却时间(防止重连后反复触发)
+            var timeSinceLastTraining = (System.DateTime.Now - _lastTrainingTime).TotalMinutes;
+            if (timeSinceLastTraining < TRAINING_COOLDOWN_MINUTES)
+            {
+                return false;
+            }
+            
             if (HasTrainedAtLevel(playerLevel)) return false;
             
             if (_config.TrainOnEvenLevels && playerLevel % 2 == 0)
@@ -199,6 +210,9 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             // 设置第一个训练类型
             _currentTrainingType = _pendingTrainings.Dequeue();
             Logging.Write($"[WAQ-Private] Starting with: {_currentTrainingType}");
+            
+            // 记录训练时间
+            _lastTrainingTime = System.DateTime.Now;
             
             // 记录当前位置
             SaveCurrentPosition();
