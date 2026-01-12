@@ -151,7 +151,7 @@ Bundles:
 # Class Profiles
 # ------------------------------------------------------------
 Classes:
-  - Name: "Rogue"
+  - Name: "Rogue" ##盗贼
     ClassId: 4
     InitialSetup:
       PriorityBundleId: 75009
@@ -273,12 +273,11 @@ Classes:
         MenuPath: ["新手散件"]
         AllowEmpty: true
         # AllowEmpty: false  # 默认为false，槽位不能为空
-  - Name: "Paladin"
+  - Name: "Paladin" ##圣骑士
     ClassId: 2
     InitialSetup:
       PriorityBundleId: 75024
       AutoEquipOnEmpty: true
-
     Slots:
       Head: #头
         ItemId: 16866

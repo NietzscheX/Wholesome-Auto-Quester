@@ -114,6 +114,14 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                 if (_config == null || _currentClassProfile == null) return;
                 if (IsActive) return;
                 
+                // 首先检查武器状态(最高优先级,无视冷却)
+                if (NeedsWeaponCheck())
+                {
+                    Logging.Write("[WAQ-Equipment] ⚠ CRITICAL: Missing weapon detected! Triggering emergency equipment refresh...");
+                    TriggerRefresh(_teleportManager);
+                    return;
+                }
+                
                 if (NeedsRefresh() || NeedsSupplies())
                 {
                     Logging.Write("[WAQ-Equipment] ⏰ Periodic check: Maintenance needed!");
@@ -130,6 +138,13 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
         public bool NeedsRefresh()
         {
             if (_config == null || _currentClassProfile == null) return false;
+            
+            // 武器检查无视冷却 - 最高优先级
+            if (NeedsWeaponCheck())
+            {
+                Logging.Write("[WAQ-Equipment] ⚠ Weapon check failed - refresh needed regardless of cooldown");
+                return true;
+            }
             
             // 检查冷却
             var elapsed = (DateTime.Now - _lastRefreshTime).TotalSeconds;
@@ -158,6 +173,113 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             if (NeedsSupplies()) return true;
             
             return false;
+        }
+        
+        /// <summary>
+        /// 检查武器状态 - 确保角色装备的武器与配置匹配
+        /// 规则:
+        /// 1. 主手必须装备配置中指定的武器(如果配置中有MainHand)
+        /// 2. 如果主手装备的是双手武器,副手可以为空
+        /// 3. 如果主手装备的是单手武器且配置了副手,副手也需要装备正确的物品
+        /// </summary>
+        public bool NeedsWeaponCheck()
+        {
+            if (_config == null || _currentClassProfile == null) return false;
+            if (_currentClassProfile.Slots == null) return false;
+            
+            // 检查配置中是否有主手武器配置
+            bool hasMainHandConfig = _currentClassProfile.Slots.ContainsKey("MainHand") 
+                && _currentClassProfile.Slots["MainHand"].Strategy != "Ignore"
+                && _currentClassProfile.Slots["MainHand"].ItemId > 0;
+            
+            if (!hasMainHandConfig)
+            {
+                // 没有配置主手武器,跳过检查
+                return false;
+            }
+            
+            int expectedMainHandId = _currentClassProfile.Slots["MainHand"].ItemId;
+            int currentMainHandId = GetEquippedItemId(16); // 16 = 主手槽位
+            
+            // 检查主手是否装备了正确的武器
+            if (currentMainHandId == 0)
+            {
+                Logging.Write($"[WAQ-Equipment] ✗ Main hand is EMPTY! Expected: {expectedMainHandId}. Combat will fail without weapon.");
+                return true;
+            }
+            
+            if (currentMainHandId != expectedMainHandId)
+            {
+                Logging.Write($"[WAQ-Equipment] ✗ Main hand weapon mismatch! Current: {currentMainHandId}, Expected: {expectedMainHandId}.");
+                return true;
+            }
+            
+            // 检查副手配置
+            bool hasOffHandConfig = _currentClassProfile.Slots.ContainsKey("OffHand")
+                && _currentClassProfile.Slots["OffHand"].Strategy != "Ignore"
+                && _currentClassProfile.Slots["OffHand"].ItemId > 0
+                && !_currentClassProfile.Slots["OffHand"].AllowEmpty;
+            
+            if (hasOffHandConfig)
+            {
+                // 检查主手是否是双手武器
+                if (IsTwoHandWeaponEquipped())
+                {
+                    // 双手武器装备时,副手会自动为空,这是正常的
+                    // 不需要日志输出,避免刷屏
+                    return false;
+                }
+                
+                int expectedOffHandId = _currentClassProfile.Slots["OffHand"].ItemId;
+                int currentOffHandId = GetEquippedItemId(17); // 17 = 副手槽位
+                
+                // 主手是单手武器,检查副手
+                if (currentOffHandId == 0)
+                {
+                    Logging.Write($"[WAQ-Equipment] ✗ Off-hand is EMPTY! Expected: {expectedOffHandId}.");
+                    return true;
+                }
+                
+                if (currentOffHandId != expectedOffHandId)
+                {
+                    Logging.Write($"[WAQ-Equipment] ✗ Off-hand weapon mismatch! Current: {currentOffHandId}, Expected: {expectedOffHandId}.");
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        /// <summary>
+        /// 获取指定槽位装备的物品ID
+        /// </summary>
+        /// <param name="slotId">槽位ID (16=主手, 17=副手)</param>
+        /// <returns>物品ID,如果槽位为空返回0</returns>
+        private int GetEquippedItemId(int slotId)
+        {
+            return Lua.LuaDoString<int>($@"
+                local itemLink = GetInventoryItemLink('player', {slotId});
+                if not itemLink then return 0; end
+                local itemId = tonumber(itemLink:match('item:(%d+)'));
+                return itemId or 0;
+            ");
+        }
+        
+        /// <summary>
+        /// 检查当前装备的主手武器是否是双手武器
+        /// </summary>
+        private bool IsTwoHandWeaponEquipped()
+        {
+            return Lua.LuaDoString<bool>(@"
+                local itemLink = GetInventoryItemLink('player', 16);
+                if not itemLink then return false; end
+                
+                local _, _, _, _, _, _, _, _, equipLoc = GetItemInfo(itemLink);
+                if not equipLoc then return false; end
+                
+                -- 双手武器类型: INVTYPE_2HWEAPON
+                return equipLoc == 'INVTYPE_2HWEAPON';
+            ");
         }
 
         public bool NeedsSupplies()
