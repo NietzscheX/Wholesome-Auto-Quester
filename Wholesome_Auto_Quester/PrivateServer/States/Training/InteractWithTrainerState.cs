@@ -99,6 +99,18 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Training
                     {
                         Logging.Write($"[WAQ-Private] Trainer window opened for {type}");
                         
+                        // 切换到"可用"标签页,只显示可学习的技能
+                        Lua.LuaDoString(@"
+                            if ClassTrainerFrame and ClassTrainerFrame:IsVisible() then
+                                -- 设置过滤器为只显示可用技能
+                                -- available = 可用, unavailable = 不可用, used = 已学习
+                                SetTrainerServiceTypeFilter('available', 1)
+                                SetTrainerServiceTypeFilter('unavailable', 0)
+                                SetTrainerServiceTypeFilter('used', 0)
+                            end
+                        ");
+                        Thread.Sleep(300); // 等待过滤器生效
+                        
                         // 学习所有可用技能
                         LearnAllAvailableServices();
                         
