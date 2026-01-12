@@ -153,7 +153,7 @@ namespace Wholesome_Auto_Quester.PrivateServer
                 if ((settings.EnableSmartTeleport || settings.Fly) && _teleportManager != null)
                 {
                     var smartTravelState = new SmartTravelState(_teleportManager);
-                    smartTravelState.Priority = Math.Max(0, basePriority - 20); // 确保高于WAQ原生旅行状态
+                    smartTravelState.Priority = System.Math.Max(0, basePriority - 20); // 确保高于WAQ原生旅行状态
                     engine.AddState(smartTravelState);
                     string mode = settings.Fly ? "Fly Mode" : "Teleport Mode";
                     Logging.Write($"[WAQ-Private] Registered: SmartTravelState ({mode}, Priority: {smartTravelState.Priority})");
@@ -162,7 +162,7 @@ namespace Wholesome_Auto_Quester.PrivateServer
                 {
                     // Fly 启用但没有 TeleportManager，创建一个不带传送功能的状态
                     var smartTravelState = new SmartTravelState(null);
-                    smartTravelState.Priority = Math.Max(0, basePriority - 20);
+                    smartTravelState.Priority = System.Math.Max(0, basePriority - 20);
                     engine.AddState(smartTravelState);
                     Logging.Write($"[WAQ-Private] Registered: SmartTravelState (Fly Only, Priority: {smartTravelState.Priority})");
                 }
