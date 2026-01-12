@@ -18,7 +18,7 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
         private DateTime _lastCheckTime = DateTime.MinValue;
         private DateTime _lastTeleportAttempt = DateTime.MinValue;
         private const int CHECK_INTERVAL_SECONDS = 3;
-        private const int TELEPORT_COOLDOWN_SECONDS = 10;
+        private const int TELEPORT_COOLDOWN_SECONDS = 60; // 增加冷却时间,防止其他旅行状态干扰
         
         // 从设置读取瞬移阈值
         private float MinDistanceForFly => WholesomeAQSettings.CurrentSetting.FlyMinDistance > 0 
