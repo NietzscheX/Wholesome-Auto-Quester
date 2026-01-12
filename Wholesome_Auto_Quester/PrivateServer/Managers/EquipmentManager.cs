@@ -25,15 +25,16 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
         }
         
         private EquipmentPhase _currentPhase = EquipmentPhase.Idle;
-        private System.Threading.Timer _checkTimer;
         private const int CHECK_INTERVAL_MS = 60000; // 每60秒检查一次
         
         // YAML 配置
         private EquipmentConfig _config;
         private ClassProfile _currentClassProfile;
-        
-        // TeleportManager 引用（用于保存返回传送点）
         private TeleportManager _teleportManager;
+        
+        // 定期检查时间戳(替代定时器,由FSM驱动)
+        private DateTime _lastPeriodicCheck = DateTime.MinValue;
+        private const int PERIODIC_CHECK_INTERVAL_MS = 30000; // 30秒portManager;
         
         // 保存的返回传送点（用于装备更换后返回）
         private TeleportLocation _savedReturnLocation;
@@ -91,48 +92,46 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             }
             
             Logging.Write($"[WAQ-Equipment] Loaded class profile: {_currentClassProfile.Name}");
-            
-            // 启动定时器，定期检查装备耐久度
-            int interval = _config.GlobalSettings?.CheckIntervalMs ?? CHECK_INTERVAL_MS;
-            _checkTimer = new System.Threading.Timer(CheckDurabilityCallback, null, 10000, interval);
-            Logging.Write($"[WAQ-Equipment] Equipment durability check timer started (interval: {interval}ms)");
+            Logging.Write($"[WAQ-Equipment] Periodic equipment check enabled (interval: {PERIODIC_CHECK_INTERVAL_MS}ms, FSM-driven)");
         }
         
         public void Dispose()
         {
-            if (_checkTimer != null)
-            {
-                _checkTimer.Dispose();
-                _checkTimer = null;
-            }
+            // 不再需要清理定时器
         }
         
-        private void CheckDurabilityCallback(object state)
+        /// <summary>
+        /// 定期检查装备状态(由FSM状态的NeedToRun调用,替代定时器)
+        /// </summary>
+        public bool ShouldPeriodicCheck()
         {
-            try
+            if (_config == null || _currentClassProfile == null) return false;
+            if (IsActive) return false;
+            
+            // 检查是否到了定期检查时间
+            var elapsed = (DateTime.Now - _lastPeriodicCheck).TotalMilliseconds;
+            if (elapsed < PERIODIC_CHECK_INTERVAL_MS)
             {
-                if (_config == null || _currentClassProfile == null) return;
-                if (IsActive) return;
-                
-                // 首先检查武器状态(最高优先级,无视冷却)
-                if (NeedsWeaponCheck())
-                {
-                    Logging.Write("[WAQ-Equipment] ⚠ CRITICAL: Missing weapon detected! Triggering emergency equipment refresh...");
-                    TriggerRefresh(_teleportManager);
-                    return;
-                }
-                
-                if (NeedsRefresh() || NeedsSupplies())
-                {
-                    Logging.Write("[WAQ-Equipment] ⏰ Periodic check: Maintenance needed!");
-                    // 使用存储的 TeleportManager 以便保存返回传送点
-                    TriggerRefresh(_teleportManager);
-                }
+                return false;
             }
-            catch (Exception e)
+            
+            _lastPeriodicCheck = DateTime.Now;
+            
+            // 首先检查武器状态(最高优先级)
+            if (NeedsWeaponCheck())
             {
-                Logging.WriteError($"[WAQ-Equipment] Error in durability check: {e.Message}");
+                Logging.Write("[WAQ-Equipment] ⚠ CRITICAL: Missing weapon detected!");
+                return true;
             }
+            
+            // 检查耐久度和补给
+            if (NeedsRefresh() || NeedsSupplies())
+            {
+                Logging.Write("[WAQ-Equipment] ⏰ Periodic check: Maintenance needed!");
+                return true;
+            }
+            
+            return false;
         }
         
         public bool NeedsRefresh()

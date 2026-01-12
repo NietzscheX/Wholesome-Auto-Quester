@@ -36,8 +36,21 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Equipment
                     return false;
                 }
                 
-                // 当装备刷新进入清理阶段时激活
-                return _equipmentManager.CurrentEquipmentPhase == Managers.EquipmentManager.EquipmentPhase.CleaningBags;
+                // 1. 当装备刷新进入清理阶段时激活
+                if (_equipmentManager.CurrentEquipmentPhase == Managers.EquipmentManager.EquipmentPhase.CleaningBags)
+                {
+                    return true;
+                }
+                
+                // 2. 定期检查装备状态(替代定时器,由FSM驱动)
+                if (_equipmentManager.ShouldPeriodicCheck())
+                {
+                    // 触发装备刷新
+                    _equipmentManager.TriggerRefresh(_teleportManager);
+                    return false; // TriggerRefresh会设置Phase为CleaningBags,下次循环会返回true
+                }
+                
+                return false;
             }
         }
         
