@@ -76,32 +76,43 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Travel
                 // 检查任务位置提供者
                 if (!WholesomeToolbox.QuestLocationBridge.IsProviderAvailable())
                 {
-                    Logging.Write("[WAQ-SmartTravel] 任务位置提供者不可用");
+                    Logging.Write("[WAQ-SmartTravel] DEBUG: Provider not available");
                     return false;
                 }
                 
                 var provider = WholesomeToolbox.QuestLocationBridge.GetProvider();
                 if (!provider.HasActiveQuestTarget())
                 {
+                    Logging.Write("[WAQ-SmartTravel] DEBUG: No active quest target");
                     return false;
                 }
                 
                 var questTarget = provider.GetCurrentQuestTarget();
                 if (questTarget == null || !questTarget.IsValid)
                 {
+                    Logging.Write("[WAQ-SmartTravel] DEBUG: Quest target is null or invalid");
                     return false;
                 }
                 
                 // 检查距离是否足够远，需要瞬移
                 float distance = ObjectManager.Me.Position.DistanceTo(questTarget.Location);
-                Logging.Write($"[WAQ-SmartTravel] 目标距离: {distance:F0} 码, 阈值: {MinDistanceForFly} 码");
                 
+                Logging.Write($"[WAQ-SmartTravel] DEBUG: Checking distance");
+                Logging.Write($"[WAQ-SmartTravel] DEBUG: Current quest: {questTarget.TargetName}");
+                Logging.Write($"[WAQ-SmartTravel] DEBUG: Distance: {distance:F0} yards, Threshold: {MinDistanceForFly} yards");
+                
+                // 添加调试日志
                 if (distance >= MinDistanceForFly)
                 {
-                    Logging.Write($"[WAQ-SmartTravel] 距离足够远，准备瞬移");
+                    Logging.Write($"[WAQ-SmartTravel] ========================================");
+                    Logging.Write($"[WAQ-SmartTravel] ✓ TRIGGERING SMART TRAVEL");
+                    Logging.Write($"[WAQ-SmartTravel] Target: {questTarget.TargetName}");
+                    Logging.Write($"[WAQ-SmartTravel] Distance: {distance:F0} yards (threshold: {MinDistanceForFly})");
+                    Logging.Write($"[WAQ-SmartTravel] ========================================");
                     return true;
                 }
                 
+                Logging.Write($"[WAQ-SmartTravel] DEBUG: Distance too short, not triggering");
                 return false;
             }
         }
