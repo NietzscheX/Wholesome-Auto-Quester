@@ -1132,21 +1132,21 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                     end
                 ");
                 Thread.Sleep(3000);
-                
-                // 再次检查背包中的物品
-                int bagItemCount = Lua.LuaDoString<int>(@"
-                    local count = 0
-                    for bag = 0, 4 do
-                        count = count + GetContainerNumSlots(bag)
-                    end
-                    return count
-                ");
-                Logging.Write($"[WAQ-Equipment] Total bag slots after bundle: {bagItemCount}");
             }
             
-            // 步骤2: 装备物品
-            Logging.Write("[WAQ-Equipment] Step 2: Equipping items...");
+            // 步骤2: 装备物品 - 简化版,直接按ID装备到指定槽位
+            Logging.Write("[WAQ-Equipment] Step 2: Equipping items from bag...");
             
+            // 先扫描背包中有哪些物品
+            var bagItems = ScanBagForConfiguredItems();
+            Logging.Write($"[WAQ-Equipment] Found {bagItems.Count} configured items in bags");
+            
+            foreach (var kvp in bagItems)
+            {
+                Logging.Write($"[WAQ-Equipment]   - Item {kvp.Key} found in bag (target slot: {kvp.Value})");
+            }
+            
+            // 构建槽位到物品ID的映射
             var slotItemMap = new Dictionary<int, int>();
             foreach (var slotEntry in _currentClassProfile.Slots)
             {
@@ -1164,10 +1164,12 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             }
             slotMapLua += "}";
             
+            // 使用更简单直接的装备逻辑
             int totalEquipped = Lua.LuaDoString<int>($@"
                 local equipped = 0;
                 local slotItemMap = {slotMapLua};
                 
+                -- 处理灵魂绑定弹窗
                 local function handlePopups()
                     for i = 1, 3 do
                         local frame = _G['StaticPopup' .. i]
@@ -1179,83 +1181,46 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                         end
                     end
                 end
-
-                local locToSlot = {{
-                    INVTYPE_HEAD = 1, INVTYPE_NECK = 2, INVTYPE_SHOULDER = 3, INVTYPE_CLOAK = 15,
-                    INVTYPE_CHEST = 5, INVTYPE_ROBE = 5, INVTYPE_WRIST = 9, INVTYPE_HAND = 10,
-                    INVTYPE_WAIST = 6, INVTYPE_LEGS = 7, INVTYPE_FEET = 8, INVTYPE_FINGER = 11,
-                    INVTYPE_TRINKET = 13, INVTYPE_RANGED = 18, INVTYPE_RELIC = 18,
-                    INVTYPE_2HWEAPON = 16, INVTYPE_WEAPONMAINHAND = 16, INVTYPE_WEAPONOFFHAND = 17,
-                    INVTYPE_HOLDABLE = 17, INVTYPE_SHIELD = 17, INVTYPE_THROWN = 18, INVTYPE_RANGEDRIGHT = 18
-                }};
-
-                -- 创建物品ID到槽位的映射
-                local itemToSlotMap = {{}};
-                for slotId, itemId in pairs(slotItemMap) do
-                    itemToSlotMap[itemId] = slotId;
-                end
                 
-                -- 创建期望物品ID集合（用于检查是否是配置中的物品）
-                local expectedItemIds = {{}};
-                for slotId, itemId in pairs(slotItemMap) do
-                    expectedItemIds[itemId] = true;
-                end
-
-                local nextFingerSlot = 11;
-                local nextTrinketSlot = 13;
-                local processedSlots = {{}};
-
-                for bag = 0, 4 do
-                    for slot = 1, GetContainerNumSlots(bag) do
-                        local itemLink = GetContainerItemLink(bag, slot);
-                        if itemLink then
-                            local itemId = tonumber(itemLink:match('item:(%d+)'));
-                            local name, _, _, _, _, _, _, _, iLoc = GetItemInfo(itemLink);
-                            if iLoc and iLoc ~= '' and iLoc ~= 'INVTYPE_BAG' then
-                                local targetSlot = nil;
-                                
-                                -- 只装备配置中明确指定的物品
-                                if itemId and itemToSlotMap[itemId] then
-                                    -- 物品在配置中有明确的槽位映射
-                                    targetSlot = itemToSlotMap[itemId];
-                                elseif itemId and expectedItemIds[itemId] then
-                                    -- 物品在配置中但可能用于戒指/饰品槽
-                                    if iLoc == 'INVTYPE_FINGER' then
-                                        targetSlot = nextFingerSlot;
-                                        if nextFingerSlot < 12 then nextFingerSlot = 12 end
-                                    elseif iLoc == 'INVTYPE_TRINKET' then
-                                        targetSlot = nextTrinketSlot;
-                                        if nextTrinketSlot < 14 then nextTrinketSlot = 14 end
-                                    end
-                                else
-                                    -- 物品不在配置中，跳过（不装备随机掉落的装备）
-                                    -- DEFAULT_CHAT_FRAME:AddMessage('[WAQ-Equipment] Skipping non-configured item: ' .. (name or itemId));
-                                end
-
-                                if targetSlot and not processedSlots[targetSlot] then
-                                    local currentLink = GetInventoryItemLink('player', targetSlot);
-                                    local currentId = nil;
-                                    if currentLink then
-                                        currentId = tonumber(currentLink:match('item:(%d+)'));
-                                    end
-                                    
-                                    -- 检查目标槽位是否已经有正确的物品
-                                    local expectedIdForSlot = slotItemMap[targetSlot];
-                                    
-                                    if currentId == itemId then
-                                        -- 已经装备了正确的物品
-                                        processedSlots[targetSlot] = true;
-                                    elseif expectedIdForSlot and itemId == expectedIdForSlot then
-                                        -- 只有当背包里的物品是配置期望的物品时才装备
-                                        DEFAULT_CHAT_FRAME:AddMessage('[WAQ-Equipment] Equipping ' .. (name or 'item') .. ' to slot ' .. targetSlot);
+                -- 直接遍历所有需要装备的槽位
+                for targetSlot, expectedItemId in pairs(slotItemMap) do
+                    -- 检查槽位当前装备
+                    local currentLink = GetInventoryItemLink('player', targetSlot);
+                    local currentId = nil;
+                    if currentLink then
+                        currentId = tonumber(currentLink:match('item:(%d+)'));
+                    end
+                    
+                    -- 如果已经是正确的装备,跳过
+                    if currentId == expectedItemId then
+                        -- 已装备正确物品
+                    else
+                        -- 在背包中查找该物品
+                        local found = false;
+                        for bag = 0, 4 do
+                            if found then break; end
+                            for slot = 1, GetContainerNumSlots(bag) do
+                                local itemLink = GetContainerItemLink(bag, slot);
+                                if itemLink then
+                                    local itemId = tonumber(itemLink:match('item:(%d+)'));
+                                    if itemId == expectedItemId then
+                                        local name = GetItemInfo(itemLink) or tostring(itemId);
+                                        DEFAULT_CHAT_FRAME:AddMessage('[WAQ-Equipment] Equipping ' .. name .. ' (ID:' .. itemId .. ') to slot ' .. targetSlot);
+                                        print('[WAQ-Equipment] Equipping ' .. name .. ' to slot ' .. targetSlot);
+                                        
                                         PickupContainerItem(bag, slot);
                                         EquipCursorItem(targetSlot);
                                         equipped = equipped + 1;
                                         handlePopups();
-                                        processedSlots[targetSlot] = true;
+                                        found = true;
+                                        break;
                                     end
                                 end
                             end
+                        end
+                        
+                        if not found and currentId ~= expectedItemId then
+                            print('[WAQ-Equipment] WARNING: Item ' .. expectedItemId .. ' not found in bags for slot ' .. targetSlot);
                         end
                     end
                 end
@@ -1265,7 +1230,95 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             
             Logging.Write($"[WAQ-Equipment] Equipped {totalEquipped} items");
             Thread.Sleep(2000);
+            
+            // 最终验证
+            Logging.Write("[WAQ-Equipment] Verifying equipment...");
+            foreach (var slotEntry in _currentClassProfile.Slots)
+            {
+                if (slotEntry.Value.Strategy == "Ignore") continue;
+                if (slotEntry.Value.ItemId <= 0) continue;
+                
+                int slotId = GetSlotId(slotEntry.Key);
+                int equippedId = GetEquippedItemId(slotId);
+                
+                if (equippedId == slotEntry.Value.ItemId)
+                {
+                    Logging.Write($"[WAQ-Equipment] ✓ Slot {slotEntry.Key}: Correct (ID: {equippedId})");
+                }
+                else if (equippedId == 0)
+                {
+                    Logging.Write($"[WAQ-Equipment] ✗ Slot {slotEntry.Key}: EMPTY (Expected: {slotEntry.Value.ItemId})");
+                }
+                else
+                {
+                    Logging.Write($"[WAQ-Equipment] ⚠ Slot {slotEntry.Key}: Wrong item (Current: {equippedId}, Expected: {slotEntry.Value.ItemId})");
+                }
+            }
+            
             Logging.Write("[WAQ-Equipment] Equipment cycle complete");
+        }
+        
+        /// <summary>
+        /// 扫描背包中的配置物品
+        /// </summary>
+        private Dictionary<int, int> ScanBagForConfiguredItems()
+        {
+            var result = new Dictionary<int, int>();
+            
+            if (_currentClassProfile?.Slots == null) return result;
+            
+            // 获取所有配置的物品ID及其目标槽位
+            var configuredItems = new Dictionary<int, int>();
+            foreach (var slotEntry in _currentClassProfile.Slots)
+            {
+                if (slotEntry.Value.ItemId > 0)
+                {
+                    int slotId = GetSlotId(slotEntry.Key);
+                    if (slotId > 0)
+                    {
+                        configuredItems[slotEntry.Value.ItemId] = slotId;
+                    }
+                }
+            }
+            
+            // 扫描背包
+            string itemIdsLua = "{" + string.Join(",", configuredItems.Keys) + "}";
+            
+            string foundItemsStr = Lua.LuaDoString<string>($@"
+                local configuredIds = {itemIdsLua};
+                local configSet = {{}};
+                for _, id in ipairs(configuredIds) do
+                    configSet[id] = true;
+                end
+                
+                local found = '';
+                for bag = 0, 4 do
+                    for slot = 1, GetContainerNumSlots(bag) do
+                        local itemLink = GetContainerItemLink(bag, slot);
+                        if itemLink then
+                            local itemId = tonumber(itemLink:match('item:(%d+)'));
+                            if itemId and configSet[itemId] then
+                                if found ~= '' then found = found .. ','; end
+                                found = found .. itemId;
+                            end
+                        end
+                    end
+                end
+                return found;
+            ");
+            
+            if (!string.IsNullOrEmpty(foundItemsStr))
+            {
+                foreach (var idStr in foundItemsStr.Split(','))
+                {
+                    if (int.TryParse(idStr, out int itemId) && configuredItems.ContainsKey(itemId))
+                    {
+                        result[itemId] = configuredItems[itemId];
+                    }
+                }
+            }
+            
+            return result;
         }
 
         private bool ShouldBuySupply(SupplyItem supply)
