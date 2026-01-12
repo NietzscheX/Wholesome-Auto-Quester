@@ -181,13 +181,10 @@ namespace Wholesome_Auto_Quester.PrivateServer
                     equipState.Priority = priority++;
                     engine.AddState(equipState);
                     
-                    // 注册传送返回状态
-                    var teleportBackEquipState = new TeleportBackFromEquipmentState(
-                        _equipmentManager, _equipmentConfig, _teleportManager);
-                    teleportBackEquipState.Priority = priority++;
-                    engine.AddState(teleportBackEquipState);
+                    // 不再需要 TeleportBackFromEquipmentState
+                    // 装备完成后 FSM 会自动选择下一个优先级匹配的状态
                     
-                    Logging.Write($"[WAQ-Private] Registered: Equipment States (Priority: {cleanBagsState.Priority}-{teleportBackEquipState.Priority})");
+                    Logging.Write($"[WAQ-Private] Registered: Equipment States (Priority: {cleanBagsState.Priority}-{equipState.Priority})");
                 }
                 
                 // 注册训练状态
@@ -209,15 +206,10 @@ namespace Wholesome_Auto_Quester.PrivateServer
                     interactState.Priority = priority++;
                     engine.AddState(interactState);
                     
-                    var teleportBackState = new TeleportBackState(_trainingManager, _equipmentConfig.Training);
-                    teleportBackState.Priority = priority++;
-                    engine.AddState(teleportBackState);
+                    // 不再需要 TeleportBackState 和 ResumeProductState
+                    // 训练完成后 FSM 会自动选择下一个优先级匹配的状态
                     
-                    var resumeState = new ResumeProductState(_trainingManager);
-                    resumeState.Priority = priority++;
-                    engine.AddState(resumeState);
-                    
-                    Logging.Write($"[WAQ-Private] Registered: Training States (Priority: {idleTrainingState.Priority}-{resumeState.Priority})");
+                    Logging.Write($"[WAQ-Private] Registered: Training States (Priority: {idleTrainingState.Priority}-{interactState.Priority})");
                 }
                 
                 Logging.Write($"[WAQ-Private] All private server states registered");

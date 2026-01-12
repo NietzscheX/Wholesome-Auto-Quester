@@ -20,8 +20,8 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             Idle,
             CleaningBags,
             PurchasingEquipment,
-            EquippingItems,
-            TeleportingBack  // 返回原来位置
+            EquippingItems
+            // 不再需要 TeleportingBack - FSM 会自动处理
         }
         
         private EquipmentPhase _currentPhase = EquipmentPhase.Idle;
@@ -319,10 +319,9 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
                 return;
             }
             
-            // 保存当前位置并查找最佳返回传送点
-            SaveCurrentPosition(teleportManager);
-            
+            // 不再保存位置 - FSM 会自动让其他状态处理导航
             _currentPhase = EquipmentPhase.CleaningBags;
+            Logging.Write("[WAQ-Equipment] Equipment refresh triggered");
         }
         
         /// <summary>

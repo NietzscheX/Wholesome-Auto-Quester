@@ -2,16 +2,19 @@ using robotManager.FiniteStateMachine;
 using robotManager.Helpful;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
-using Wholesome_Auto_Quester.PrivateServer.Managers;
 
 namespace Wholesome_Auto_Quester.PrivateServer.States.Equipment
 {
+    /// <summary>
+    /// 清理背包状态 - 删除损坏和不匹配的装备
+    /// 此状态在检测到需要装备刷新时激活
+    /// </summary>
     public class CleanBagsState : State
     {
-        private EquipmentManager _equipmentManager;
-        private TeleportManager _teleportManager;
+        private Managers.EquipmentManager _equipmentManager;
+        private Managers.TeleportManager _teleportManager;
         
-        public CleanBagsState(EquipmentManager equipmentManager, TeleportManager teleportManager = null)
+        public CleanBagsState(Managers.EquipmentManager equipmentManager, Managers.TeleportManager teleportManager = null)
         {
             _equipmentManager = equipmentManager;
             _teleportManager = teleportManager;
@@ -33,14 +36,8 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Equipment
                     return false;
                 }
                 
-                // 检查是否需要装备刷新并且还没开始
-                if (!_equipmentManager.IsActive && _equipmentManager.NeedsRefresh())
-                {
-                    // 触发刷新流程，传入 TeleportManager 以便保存返回点
-                    _equipmentManager.TriggerRefresh(_teleportManager);
-                }
-                
-                return _equipmentManager.CurrentEquipmentPhase == EquipmentManager.EquipmentPhase.CleaningBags;
+                // 当装备刷新进入清理阶段时激活
+                return _equipmentManager.CurrentEquipmentPhase == Managers.EquipmentManager.EquipmentPhase.CleaningBags;
             }
         }
         
@@ -52,7 +49,9 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Equipment
             Logging.Write("[WAQ-Private] ========================================");
             
             _equipmentManager.ExecuteCleanBags();
-            _equipmentManager.SetPhase(EquipmentManager.EquipmentPhase.PurchasingEquipment);
+            
+            // 进入购买阶段
+            _equipmentManager.SetPhase(Managers.EquipmentManager.EquipmentPhase.PurchasingEquipment);
         }
     }
 }

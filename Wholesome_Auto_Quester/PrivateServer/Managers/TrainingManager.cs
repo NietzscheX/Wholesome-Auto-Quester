@@ -14,9 +14,8 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             RecordingPosition,
             UsingHearthstone,
             TravelingToTrainer,
-            InteractingWithTrainer,
-            TeleportingBack,
-            ResumingProduct
+            InteractingWithTrainer
+            // 不再需要 TeleportingBack 和 ResumingProduct - FSM 会自动处理
         }
         
         private TrainingPhase _currentPhase = TrainingPhase.Idle;
@@ -289,8 +288,12 @@ namespace Wholesome_Auto_Quester.PrivateServer.Managers
             }
             else
             {
-                // 所有训练完成，传送回去
-                _currentPhase = TrainingPhase.TeleportingBack;
+                // 所有训练完成，直接回到 Idle
+                // FSM 会自动让其他状态处理导航
+                _currentPhase = TrainingPhase.Idle;
+                Logging.Write("[WAQ-Private] ========================================");
+                Logging.Write("[WAQ-Private] ✓ All training complete!");
+                Logging.Write("[WAQ-Private] ========================================");
             }
         }
         

@@ -6,6 +6,10 @@ using System.Threading;
 
 namespace Wholesome_Auto_Quester.PrivateServer.States.Equipment
 {
+    /// <summary>
+    /// 装备物品状态 - 将购买的物品装备到角色身上
+    /// 完成后验证,如果武器仍缺失则重试购买
+    /// </summary>
     public class EquipItemsState : State
     {
         private Managers.EquipmentManager _equipmentManager;
@@ -43,8 +47,8 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Equipment
             
             _equipmentManager.ExecuteEquipItems();
             
-            // 等待一下让游戏更新装备状态
-            Thread.Sleep(1000);
+            // 等待装备生效
+            Thread.Sleep(1500);
             
             // 验证武器是否正确装备
             if (_equipmentManager.NeedsWeaponCheck())
@@ -53,36 +57,31 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Equipment
                 
                 if (_retryCount >= MAX_RETRIES)
                 {
-                    Logging.WriteError($"[WAQ-Private] ✗ Equipment failed after {MAX_RETRIES} attempts! Aborting refresh cycle.");
+                    Logging.WriteError($"[WAQ-Private] ✗ Equipment failed after {MAX_RETRIES} attempts! Check NPC inventory.");
                     _retryCount = 0;
                     _equipmentManager.MarkRefreshComplete(false);
                     _equipmentManager.SetPhase(Managers.EquipmentManager.EquipmentPhase.Idle);
                     return;
                 }
                 
-                Logging.Write($"[WAQ-Private] ⚠ Weapon check failed after equipping! Retry {_retryCount}/{MAX_RETRIES}...");
-                Logging.Write("[WAQ-Private] Returning to purchase phase to re-acquire missing weapons...");
+                Logging.Write($"[WAQ-Private] ⚠ Weapon check failed! Retry {_retryCount}/{MAX_RETRIES}...");
                 
-                // 回到购买阶段重新购买
+                // 回到购买阶段重新尝试
                 _equipmentManager.SetPhase(Managers.EquipmentManager.EquipmentPhase.PurchasingEquipment);
                 return;
             }
             
-            // 装备成功,重置重试计数
+            // 成功!
             _retryCount = 0;
+            _equipmentManager.MarkRefreshComplete(true);
             
-            // 切换到传送返回阶段（如果有保存的返回点）
-            if (_equipmentManager.HasSavedReturnLocation)
-            {
-                Logging.Write("[WAQ-Private] ✓ Equipment complete, preparing to teleport back...");
-                _equipmentManager.SetPhase(Managers.EquipmentManager.EquipmentPhase.TeleportingBack);
-            }
-            else
-            {
-                Logging.Write("[WAQ-Private] ✓ Equipment refresh complete (no return teleport)");
-                _equipmentManager.MarkRefreshComplete(true);
-                _equipmentManager.SetPhase(Managers.EquipmentManager.EquipmentPhase.Idle);
-            }
+            Logging.Write("[WAQ-Private] ========================================");
+            Logging.Write("[WAQ-Private] ✓ Equipment refresh complete!");
+            Logging.Write("[WAQ-Private] ========================================");
+            
+            // 直接回到 Idle 状态,让 FSM 决定下一步做什么
+            // 不需要手动传送回去,其他任务状态会自动接管
+            _equipmentManager.SetPhase(Managers.EquipmentManager.EquipmentPhase.Idle);
         }
     }
 }
