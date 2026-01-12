@@ -146,51 +146,19 @@ namespace Wholesome_Auto_Quester.PrivateServer.States.Training
         {
             try
             {
-                // 使用 Lua 一次性学习所有可用技能
-                // 这样更高效，避免逐个检查
-                int learnedCount = Lua.LuaDoString<int>(@"
-                    local learned = 0
-                    local availableFound = true
-                    local maxIterations = 50  -- 防止无限循环
-                    local iteration = 0
-                    
-                    while availableFound and iteration < maxIterations do
-                        availableFound = false
-                        iteration = iteration + 1
-                        
-                        local numServices = GetNumTrainerServices() or 0
-                        
-                        for i = 1, numServices do
-                            local _, _, serviceType = GetTrainerServiceInfo(i)
-                            if serviceType == 'available' then
-                                BuyTrainerService(i)
-                                learned = learned + 1
-                                availableFound = true
-                                -- 学习一个后列表可能变化，需要重新扫描
-                                break
-                            end
-                        end
-                    end
-                    
-                    return learned
-                ");
+                Logging.Write("[WAQ-Private] Learning services...");
                 
-                if (learnedCount > 0)
-                {
-                    Logging.Write($"[WAQ-Private] ✓ Learned {learnedCount} skills");
-                }
-                else
-                {
-                    Logging.Write("[WAQ-Private] No available skills to learn");
-                }
+                // 使用 WRobot 内置方法学习所有可用技能
+                // 这个方法会自动处理过滤和学习逻辑
+                Trainer.TrainingSpell();
                 
-                Thread.Sleep(500 + Usefuls.Latency);
+                Thread.Sleep(1000 + Usefuls.Latency);
+                
+                Logging.Write("[WAQ-Private] Training complete");
             }
             catch (Exception ex)
             {
                 Logging.WriteError($"[WAQ-Private] Error learning services: {ex.Message}");
-                // 降级：尝试直接使用 BuyTrainerService(0)
-                Lua.LuaDoString("BuyTrainerService(0)");
             }
         }
         
